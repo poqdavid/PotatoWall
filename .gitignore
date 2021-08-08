@@ -1,0 +1,14 @@
+
+.vs/
+
+bin/
+
+Libs/
+
+obj/
+
+Properties/
+
+Release/
+
+*.user
