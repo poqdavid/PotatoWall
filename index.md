@@ -1,7 +1,3 @@
- <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
- By using WinDivert this application gives you the ability to allow/block connections.
-
-----------
 <p align="center">
 <a href="https://github.com/poqdavid/PotatoWall/raw/master/Screenshots/PotatoWall_1.png" target="_blank">
 <img title="Click to enlarge" src="https://github.com/poqdavid/PotatoWall/raw/master/Screenshots/PotatoWall_1.png">
