@@ -1,0 +1,3 @@
+[submodule "Libs/WinDivertSharp"]
+	path = Libs/WinDivertSharp
+	url = https://github.com/poqdavid/WinDivertSharp.git

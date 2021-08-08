@@ -1,0 +1,1155 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Window
+    x:Class="PotatoWall.PotatoWallUI"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:PotatoWall"
+    xmlns:localConverters="clr-namespace:PotatoWall.Converters"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="window_client"
+    Title="PotatoWall"
+    Width="1330"
+    Height="700"
+    Background="{DynamicResource MaterialDesignPaper}"
+    ContentRendered="Window_Client_ContentRendered"
+    FontFamily="{DynamicResource MaterialDesignFont}"
+    Icon="/potatowall.ico"
+    Loaded="Window_Client_Loaded"
+    ResizeMode="CanResize"
+    TextElement.FontSize="13"
+    TextElement.FontWeight="Regular"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextOptions.TextFormattingMode="Ideal"
+    TextOptions.TextRenderingMode="Auto"
+    WindowStyle="SingleBorderWindow"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Menu.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.CheckBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.RadioButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Font.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml" />
+
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <localConverters:ComboBoxSelectedValueConverter x:Key="ComboBoxSelectedValueConverter" />
+            <localConverters:DialogHostStackPanelWidthConverter x:Key="DialogHostStackPanelWidthConverter" />
+            <localConverters:DialogHostStackPanelHeightConverter x:Key="DialogHostStackPanelHeightConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid
+            x:Name="grid_loading"
+            Grid.RowSpan="4"
+            Panel.ZIndex="1000"
+            d:IsHidden="True"
+            Background="#FF535353">
+            <Label
+                x:Name="lb_loading"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="Loading..."
+                FontFamily="Segoe UI"
+                FontSize="29"
+                FontWeight="Bold"
+                Foreground="Black" />
+        </Grid>
+        <materialDesign:DialogHost
+            x:Name="DH_Settings"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            DialogTheme="Inherit"
+            OverlayBackground="{DynamicResource PrimaryHueDarkBrush}"
+            OverridesDefaultStyle="True">
+            <materialDesign:DialogHost.DialogContent>
+                <Grid
+                    x:Name="Settings_MAIN"
+                    MinWidth="270"
+                    MaxWidth="{Binding ActualWidth, Converter={StaticResource DialogHostStackPanelWidthConverter}, ConverterParameter=100.0, ElementName=window_client, Mode=OneWay}"
+                    MaxHeight="{Binding ActualHeight, Converter={StaticResource DialogHostStackPanelHeightConverter}, ConverterParameter=100.0, ElementName=window_client, Mode=OneWay}"
+                    Margin="16">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="5" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="3"><Run Text="Settings" /></TextBlock>
+
+                    <Grid
+                        x:Name="Settings_LEFT"
+                        Grid.Row="2"
+                        Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="25" />
+
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <GroupBox
+                            Grid.Row="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                            <GroupBox.Header>
+                                UI options.
+                            </GroupBox.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="Theme Color: " /></TextBlock>
+                                <ComboBox
+                                    x:Name="theme_p"
+                                    Grid.Row="2"
+                                    Width="Auto"
+                                    Height="Auto"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    DataContext="{Binding IColorData, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}}"
+                                    DisplayMemberPath="ColorName"
+                                    ItemsSource="{Binding ColorDataList}"
+                                    SelectedIndex="{Binding ISettings.GUI.XTheme.Color, BindsDirectlyToSource=True, IsAsync=False, Mode=TwoWay, NotifyOnTargetUpdated=False, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
+                                    SelectedValuePath="ColorName"
+                                    SelectionChanged="Theme_P_SelectionChanged">
+                                    <ComboBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource MaterialDesignComboBoxItemStyle}" TargetType="{x:Type ComboBoxItem}">
+                                            <Setter Property="Tag" Value="{Binding ColorMetadata}" />
+                                            <Setter Property="IsEnabled" Value="{Binding ColorEnabled}" />
+                                            <Setter Property="IsHitTestVisible" Value="{Binding ColorEnabled}" />
+                                        </Style>
+                                    </ComboBox.ItemContainerStyle>
+                                </ComboBox>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Grid.Row="2">
+                            <GroupBox.Header>
+                                FriesWall options.
+                            </GroupBox.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="15" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="15" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="White list / Auto RegEX: " /></TextBlock>
+                                <CheckBox
+                                    Grid.Row="2"
+                                    HorizontalContentAlignment="Left"
+                                    Content="Enable"
+                                    IsChecked="{Binding ISettings.EnableRegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox
+                                    x:Name="TextBox_RegEX"
+                                    Grid.Row="4"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.RegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Row="6"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="IP Activity Time: " /></TextBlock>
+                                <TextBox
+                                    x:Name="TextBox_IPActivityTime"
+                                    Grid.Row="8"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.IPActivityTime, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Row="10"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="IP Search Duration: " /></TextBlock>
+                                <TextBox
+                                    x:Name="TextBox_IPSearchDuration"
+                                    Grid.Row="12"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.IPSearchDuration, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                    <Grid
+                        x:Name="Settings_RIGHT"
+                        Grid.Row="2"
+                        Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="25" />
+
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+
+                            <RowDefinition Height="15" />
+
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <GroupBox Grid.Row="0">
+                            <GroupBox.Header>
+                                WinDivert options.
+                            </GroupBox.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+
+                                    <RowDefinition Height="15" />
+
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+
+                                    <RowDefinition Height="15" />
+
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+
+                                    <RowDefinition Height="15" />
+
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="WinDivert Filter: " /></TextBlock>
+
+                                <TextBox
+                                    x:Name="TextBox_WinDFilter"
+                                    Grid.Row="2"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.WinDivert.Filter, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Row="4"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="WinDivert QueueLen: " /></TextBlock>
+
+                                <TextBox
+                                    x:Name="TextBox_WinDQueueLen"
+                                    Grid.Row="6"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.WinDivert.QueueLen, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Row="8"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="WinDivert QueueTime: " /></TextBlock>
+
+                                <TextBox
+                                    x:Name="TextBox_WinDQueueTime"
+                                    Grid.Row="10"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.WinDivert.QueueTime, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Row="12"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"><Run Text="WinDivert QueueSize: " /></TextBlock>
+
+                                <TextBox
+                                    x:Name="TextBox_WinDQueueSize"
+                                    Grid.Row="14"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Text="{Binding ISettings.WinDivert.QueueSize, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Row="2">
+                            <GroupBox.Header>
+                                WinDivert function.
+                            </GroupBox.Header>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <RadioButton
+                                    Grid.Row="0"
+                                    Content="WinDivertRecvEx"
+                                    IsChecked="{Binding ISettings.WinDivert.WinDivertRecvEx, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                                <RadioButton
+                                    Grid.Row="2"
+                                    Content="WinDivertRecv"
+                                    IsChecked="{Binding ISettings.WinDivert.WinDivertRecv, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+
+                    <StackPanel
+                        Grid.Row="4"
+                        Grid.ColumnSpan="3"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <Button
+                            x:Name="Settings_Button_CLOSE"
+                            Click="Settings_Button_CLOSE_Click"
+                            Command="materialDesign:DialogHost.CloseDialogCommand"
+                            Content="CLOSE"
+                            IsDefault="True" />
+                    </StackPanel>
+                </Grid>
+            </materialDesign:DialogHost.DialogContent>
+
+            <Grid x:Name="main_grid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+
+                    <RowDefinition Height="150*" />
+                </Grid.RowDefinitions>
+
+                <DockPanel
+                    x:Name="toolbar_dock"
+                    Grid.Row="0"
+                    Background="{DynamicResource PrimaryHueDarkBrush}">
+                    <ToolBarPanel>
+                        <ToolBar
+                            Width="Auto"
+                            Height="Auto"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource PrimaryHueDarkBrush}"
+                            DataContext="{Binding}"
+                            ToolBarTray.IsLocked="True">
+
+                            <ToggleButton
+                                x:Name="Button_Enable"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_Enable_Click"
+                                RenderTransformOrigin="0.5,0.5" />
+                            <Separator />
+                            <Button
+                                x:Name="Button_BlockAll"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_BlockAll_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_BlockAll_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="LanDisconnect" />
+                                    <TextBlock
+                                        x:Name="Button_BlockAll_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="Block All" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Button
+                                x:Name="Button_BlackList"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_BlackList_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_BlackList_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="PlaylistRemove" />
+                                    <TextBlock
+                                        x:Name="Button_BlackList_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="Black list" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Separator />
+                            <Button
+                                x:Name="Button_WhiteList"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_WhiteList_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_WhiteList_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="PlaylistCheck" />
+                                    <TextBlock
+                                        x:Name="Button_WhiteList_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="White list" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Button
+                                x:Name="Button_AutoList"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_AutoList_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_AutoList_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="AutoFix" />
+                                    <TextBlock
+                                        x:Name="Button_AutoList_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="Auto" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Button
+                                x:Name="Button_RegEX"
+                                Width="Auto"
+                                Height="Auto"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_RegEX_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_RegEX_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="Regex" />
+                                    <TextBlock
+                                        x:Name="Button_RegEX_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="RegEX" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Separator />
+                            <Button
+                                x:Name="Button_Setting"
+                                Width="Auto"
+                                Height="Auto"
+                                Padding="16,16,16,16"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_Setting_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_Setting_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="Cog" />
+                                    <TextBlock
+                                        x:Name="Button_Setting_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="Settings" /></TextBlock>
+                                </Grid>
+                            </Button>
+                            <Separator />
+                            <Label
+                                x:Name="Label_LocalIP"
+                                Width="Auto"
+                                Height="Auto"
+                                Padding="16,16,16,16"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                Content="{Binding LocalIP, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=Explicit}"
+                                ContentStringFormat="Local IP: {0}" />
+                            <Label
+                                x:Name="Label_PublicIP"
+                                Width="Auto"
+                                Height="Auto"
+                                Padding="16,16,16,16"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                Content="{Binding ExternalIP, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=Explicit}"
+                                ContentStringFormat="Public IP: {0}" />
+
+                            <Separator />
+                            <Button
+                                x:Name="Button_DownloadDataBase"
+                                Width="Auto"
+                                Height="Auto"
+                                Padding="16,16,16,16"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                Click="Button_DownloadDataBase_Click"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon
+                                        x:Name="Button_DownloadDataBase_Icon"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Kind="Download" />
+                                    <TextBlock
+                                        x:Name="Button_DownloadDataBase_Text"
+                                        Grid.Column="1"
+                                        Margin="5,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"><Run Text="Download Database" /></TextBlock>
+                                </Grid>
+                            </Button>
+                        </ToolBar>
+                    </ToolBarPanel>
+                </DockPanel>
+
+                <DockPanel x:Name="main_c" Grid.Row="2">
+                    <TabControl Style="{StaticResource MaterialDesignTabControl}">
+                        <TabItem Header="Main">
+                            <Grid
+                                Margin="5,30,5,30"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="5" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <RichTextBox
+                                    x:Name="richtextBox_console"
+                                    Grid.Column="0"
+                                    Margin="0,0,0,0"
+                                    Block.LineHeight="8"
+                                    IsReadOnly="True"
+                                    IsReadOnlyCaretVisible="True"
+                                    TextChanged="RichtextBox_Console_TextChanged"
+                                    VerticalScrollBarVisibility="Auto" />
+
+                                <GridSplitter
+                                    Grid.Column="1"
+                                    Width="5"
+                                    HorizontalAlignment="Stretch" />
+
+                                <ListBox
+                                    x:Name="listBox_activeiplist"
+                                    Grid.Column="2"
+                                    VerticalContentAlignment="Top"
+                                    DataContext="{Binding ActiveIPList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
+                                    FontFamily="Segoe UI"
+                                    ItemsSource="{Binding ActiveIPList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+
+                                    <ListBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="{x:Type ListBoxItem}" />
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ContextMenu>
+
+                                                    <ContextMenu x:Name="ContextMenu_ActiveList">
+                                                        <MenuItem
+                                                            x:Name="MenuItem_BlacklistAdd"
+                                                            Click="MenuItem_BlacklistAdd_Click"
+                                                            Header="Add BlackList" />
+                                                        <MenuItem
+                                                            x:Name="MenuItem_WhitelistAdd"
+                                                            Click="MenuItem_WhitelistAdd_Click"
+                                                            Header="Add WhiteList" />
+                                                    </ContextMenu>
+                                                </Grid.ContextMenu>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="25" />
+                                                    <RowDefinition Height="25" />
+                                                    <RowDefinition Height="25" />
+                                                </Grid.RowDefinitions>
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Con: "
+                                                    FontWeight="Bold" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding Direction, IsAsync=True}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Src: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding IPPort, IsAsync=True}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding ASN}" />
+
+                                                <Label
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Dst: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding DstIPData.ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="2"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.IPPort}" />
+
+                                                <Label
+                                                    Grid.Row="2"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.ASN}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="White/Black list">
+                            <Grid
+                                Margin="5,30,5,30"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="5" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ListBox
+                                    x:Name="listBox_whitelist"
+                                    Grid.Column="0"
+                                    VerticalContentAlignment="Top"
+                                    DataContext="{Binding IpWhiteList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
+                                    FontFamily="Segoe UI"
+                                    ItemsSource="{Binding IpWhiteList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="{x:Type ListBoxItem}" />
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ContextMenu>
+                                                    <ContextMenu x:Name="ContextMenu_WhiteList">
+                                                        <MenuItem
+                                                            x:Name="MenuItem_WhitelistRemove"
+                                                            Click="MenuItem_WhitelistRemove_Click"
+                                                            Header="Remove" />
+                                                    </ContextMenu>
+                                                </Grid.ContextMenu>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="25" />
+                                                    <RowDefinition Height="25" />
+                                                </Grid.RowDefinitions>
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Src: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding IPPort, IsAsync=True}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding ASN}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Dst: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding DstIPData.ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.IPPort}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.ASN}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <GridSplitter
+                                    Grid.Column="1"
+                                    Width="5"
+                                    HorizontalAlignment="Stretch" />
+
+                                <ListBox
+                                    x:Name="listBox_blacklist"
+                                    Grid.Column="2"
+                                    VerticalContentAlignment="Top"
+                                    DataContext="{Binding IpBlackList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
+                                    FontFamily="Segoe UI"
+                                    ItemsSource="{Binding IpBlackList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="{x:Type ListBoxItem}" />
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ContextMenu>
+                                                    <ContextMenu x:Name="ContextMenu_BlackList">
+                                                        <MenuItem
+                                                            x:Name="MenuItem_BlacklistRemove"
+                                                            Click="MenuItem_BlacklistRemove_Click"
+                                                            Header="Remove" />
+                                                    </ContextMenu>
+                                                </Grid.ContextMenu>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="25" />
+                                                    <RowDefinition Height="25" />
+                                                </Grid.RowDefinitions>
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Src: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding IPPort, IsAsync=True}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding ASN}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Dst: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding DstIPData.ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.IPPort}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.ASN}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Auto">
+                            <Grid
+                                Margin="5,30,5,30"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ListBox
+                                    x:Name="listBox_autowhitelist"
+                                    Grid.Column="0"
+                                    VerticalContentAlignment="Top"
+                                    DataContext="{Binding IpAutoWhiteList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
+                                    FontFamily="Segoe UI"
+                                    ItemsSource="{Binding IpAutoWhiteList, BindsDirectlyToSource=True, IsAsync=True, NotifyOnTargetUpdated=True, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource MaterialDesignListBoxItem}" TargetType="{x:Type ListBoxItem}" />
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="25" />
+                                                    <RowDefinition Height="25" />
+                                                </Grid.RowDefinitions>
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Src: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding IPPort, IsAsync=True}" />
+
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding ASN}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="Dst: "
+                                                    FontWeight="Bold" />
+
+                                                <Image
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    Source="{Binding DstIPData.ImageSource}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="4"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.IPPort}" />
+
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Grid.Column="6"
+                                                    Width="Auto"
+                                                    Height="25"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Right"
+                                                    Content="{Binding DstIPData.ASN}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+            </Grid>
+        </materialDesign:DialogHost>
+    </Grid>
+</Window>
