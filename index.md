@@ -1,4 +1,3 @@
-# PotatoWall
 By using WinDivert this application gives you the ability to allow/block connections.
 
 ----------
