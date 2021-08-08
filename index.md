@@ -1,4 +1,5 @@
-By using WinDivert this application gives you the ability to allow/block connections.
+ <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+ By using WinDivert this application gives you the ability to allow/block connections.
 
 ----------
 <p align="center">
