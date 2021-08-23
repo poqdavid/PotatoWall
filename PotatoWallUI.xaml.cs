@@ -379,11 +379,10 @@ namespace PotatoWall
             {
                 ModeAuto = false;
                 Button_AutoList_Icon.Foreground = DefaultFrogroundC;
+                IpAutoWhiteList.Clear();
             }
             else
             {
-                IpAutoWhiteList.Clear();
-
                 ModeWhiteList = false;
                 ModeBlackList = false;
                 ModeBlockAll = false;
@@ -920,6 +919,11 @@ namespace PotatoWall
             _ = IpWhiteList.AddContains((SrcIPData)listBox_activeiplist.SelectedItem);
         }
 
+        private void MenuItem_AutoWhitelistAdd_Click(object sender, RoutedEventArgs e)
+        {
+            _ = IpAutoWhiteList.AddContains((SrcIPData)listBox_activeiplist.SelectedItem);
+        }
+
         private void MenuItem_WhitelistRemove_Click(object sender, RoutedEventArgs e)
         {
             _ = IpWhiteList.Remove((SrcIPData)listBox_whitelist.SelectedItem);
@@ -928,6 +932,11 @@ namespace PotatoWall
         private void MenuItem_BlacklistRemove_Click(object sender, RoutedEventArgs e)
         {
             _ = IpBlackList.Remove((SrcIPData)listBox_blacklist.SelectedItem);
+        }
+
+        private void MenuItem_AutoWhitelistRemove_Click(object sender, RoutedEventArgs e)
+        {
+            _ = IpAutoWhiteList.Remove((SrcIPData)listBox_autowhitelist.SelectedItem);
         }
 
         private void MenuItem_CopySrcIP_Click(object sender, RoutedEventArgs e)

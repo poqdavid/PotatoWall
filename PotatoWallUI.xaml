@@ -409,6 +409,10 @@
                                                             x:Name="MenuItem_WhitelistAdd"
                                                             Click="MenuItem_WhitelistAdd_Click"
                                                             Header="Add WhiteList" />
+                                                        <MenuItem
+                                                            x:Name="MenuItem_AutoWhitelistAdd"
+                                                            Click="MenuItem_AutoWhitelistAdd_Click"
+                                                            Header="Add AutoWhiteList" />
                                                         <Separator />
 
                                                         <MenuItem Header="Copy">
@@ -811,6 +815,14 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
+                                                <Grid.ContextMenu>
+                                                    <ContextMenu x:Name="ContextMenu_AutoWhiteList">
+                                                        <MenuItem
+                                                            x:Name="MenuItem_AutoWhitelistRemove"
+                                                            Click="MenuItem_AutoWhitelistRemove_Click"
+                                                            Header="Remove" />
+                                                    </ContextMenu>
+                                                </Grid.ContextMenu>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="10" />
