@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2016-2020 POQDavid
+ *  	Copyright (c) 2021 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Media;
 
@@ -56,8 +57,12 @@ namespace PotatoWall
 
     public class ColorData : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private List<ColorDataList> defaultColorDataList = new() { };
+
         [JsonProperty("ColorDataList")]
-        public List<ColorDataList> ColorDataList { get; set; } = new List<ColorDataList>() { };
+        public List<ColorDataList> ColorDataList { get => defaultColorDataList; set { defaultColorDataList = value; OnPropertyChanged(); } }
 
         /// <summary>
         /// Saves the Color data in selected path.
@@ -94,14 +99,14 @@ namespace PotatoWall
             }
             cd.ColorDataList.Add(new ColorDataList("------------Others------------", "SEP", false));
 
-            File.WriteAllText(PotatoWallUI.ColorDataPath, JsonConvert.SerializeObject(cd, Formatting.Indented, s));
+            File.WriteAllText(PotatoWallClient.ColorDataPath, JsonConvert.SerializeObject(cd, Formatting.Indented, s));
         }
 
         public void Load()
         {
             try
             {
-                string json_string = File.ReadAllText(PotatoWallUI.ColorDataPath);
+                string json_string = File.ReadAllText(PotatoWallClient.ColorDataPath);
                 if (Json.IsValid(json_string))
                 {
                     JsonSerializerSettings s = new()
@@ -110,7 +115,7 @@ namespace PotatoWall
                         ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
                     };
 
-                    PotatoWallUI.IColorData = JsonConvert.DeserializeObject<ColorData>(json_string, s);
+                    ColorDataList = JsonConvert.DeserializeObject<ColorData>(json_string, s).ColorDataList;
                 }
                 else
                 {
@@ -125,13 +130,7 @@ namespace PotatoWall
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Notifies objects registered to receive this event that a property value has changed.
-        /// </summary>
-        /// <param name="propertyName">The name of the property that was changed.</param>
-        protected virtual void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

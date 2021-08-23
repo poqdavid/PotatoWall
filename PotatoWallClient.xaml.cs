@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2016-2020 POQDavid
+ *  	Copyright (c) 2021 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -35,6 +35,9 @@ namespace PotatoWall
     public partial class PotatoWallClient : Application
     {
         public static string AppDataPath { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PotatoWall");
+        public static string DataPath { get; set; } = Path.Combine(AppDataPath, @"data");
+        public static string LogsPath { get; set; } = Path.Combine(AppDataPath, @"logs");
+        public static string ColorDataPath { get; set; } = Path.Combine(AppDataPath, "Colors.data");
 
         ///<summary>
         /// Gets or sets the dataDir property.
@@ -68,8 +71,17 @@ namespace PotatoWall
         public void InitializeComponent()
         {
             logger.WriteLog("Initializing resources for Client", LogLevel.Info);
-            Uri resourceLocater = new("/PotatoWall;V1.0.0.0;component/PotatoWallclient.xaml", UriKind.Relative);
+            Uri resourceLocater = new("/PotatoWall;V1.2.0.0;component/PotatoWallclient.xaml", UriKind.Relative);
             LoadComponent(this, resourceLocater);
+
+            if (Directory.Exists(AppDataPath)) { logger.WriteLog($"AppData Path: {AppDataPath}", LogLevel.Info); }
+            else { logger.WriteLog($"Creating AppData folder {AppDataPath}", LogLevel.Info); Directory.CreateDirectory(AppDataPath); }
+
+            if (Directory.Exists(DataPath)) { logger.WriteLog($"Data Path: {DataPath}", LogLevel.Info); }
+            else { logger.WriteLog($"Creating Data folder {DataPath}", LogLevel.Info); Directory.CreateDirectory(DataPath); }
+
+            if (Directory.Exists(LogsPath)) { logger.WriteLog($"Logs Path: {LogsPath}", LogLevel.Info); }
+            else { Directory.CreateDirectory(LogsPath); logger.WriteLog($"Creating Logs folder {LogsPath}", LogLevel.Info); }
 
             if (File.Exists(ASNDBPath)) { logger.WriteLog($"Loading {ASNDBPath} database.", LogLevel.Info); ASNMMDBReader = new(ASNDBPath); }
             else { logger.WriteLog($"{ASNDBPath} database does not Exist.", LogLevel.Info); }

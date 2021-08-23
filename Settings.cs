@@ -1,6 +1,6 @@
 /*
  *      This file is part of SAPPRemote distribution (https://github.com/poqdavid/SAPPRemote or http://poqdavid.github.io/SAPPRemote/).
- *  	Copyright (c) 2016-2020 POQDavid
+ *  	Copyright (c) 2021 POQDavid
  *      Copyright (c) contributors
  *
  *      SAPPRemote is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ namespace PotatoWall.Config
     {
         private string defaultRegEX = @"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$";
 
-        private bool defaultEnableRegEX;
+        private bool defaultEnableRegEX = true;
 
         private int defaultIPActivityTime = 35;
 
@@ -55,7 +55,7 @@ namespace PotatoWall.Config
         }
 
         [JsonProperty("EnableRegEX")]
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         public bool EnableRegEX
         {
             get => defaultEnableRegEX;
@@ -90,7 +90,7 @@ namespace PotatoWall.Config
             }
         }
 
-        public GUI GUI { get; set; } = new(new XTheme("bluegrey"));
+        public GUI GUI { get; set; } = new(new XTheme(5));
 
         public WinDivert WinDivert { get; set; } = new();
 
@@ -156,15 +156,15 @@ namespace PotatoWall.Config
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public XTheme(string color)
+        public XTheme(int color)
         {
             Color = color;
         }
 
-        private string defaultColor = "bluegrey";
+        private int defaultColor = 5;
 
         [JsonProperty("Color")]
-        public string Color { get => defaultColor; set { defaultColor = value; OnPropertyChanged(); } }
+        public int Color { get => defaultColor; set { defaultColor = value; OnPropertyChanged(); } }
 
         // This method is called by the Set accessor of each property.
         // The CallerMemberName attribute that is applied to the optional propertyName
@@ -183,7 +183,7 @@ namespace PotatoWall.Config
         }
 
         [JsonProperty("Theme")]
-        public XTheme XTheme { get; set; } = new("bluegrey");
+        public XTheme XTheme { get; set; } = new(5);
     }
 
     public class WinDivert : INotifyPropertyChanged

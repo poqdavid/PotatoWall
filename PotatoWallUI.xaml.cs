@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2016-2020 POQDavid
+ *  	Copyright (c) 2021 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 using MaterialDesignColors;
+using PotatoWall.MVVM.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,10 +51,6 @@ namespace PotatoWall
         ///</summary>
         ///<value>Plugin Settings.</value>
         public static Config.Settings ISettings { get => PotatoWallClient.ISettings; set => PotatoWallClient.ISettings = value; }
-
-        public static string ColorDataPath { get; set; } = Path.Combine(PotatoWallClient.AppDataPath, "Colors.data");
-
-        public static ColorData IColorData { get; set; }
 
         private static Brush DefaultFrogroundC = Brushes.White;
 
@@ -91,7 +88,7 @@ namespace PotatoWall
 
         private readonly List<string> hosts = new() { "http://whatismyip.akamai.com/", "http://checkip.amazonaws.com/", "http://icanhazip.com/" };
 
-        private static string externalIP = "0.0.0.0";
+        private static string externalIP = "255.255.255.255";
 
         public string ExternalIP { get => externalIP; set { externalIP = value; Label_PublicIP.Dispatcher.InvokeOrExecute(() => { Label_PublicIP.GetBindingExpression(ContentProperty).UpdateTarget(); }); } }
 
@@ -99,14 +96,18 @@ namespace PotatoWall
 
         public string LocalIP { get => localIP; set { localIP = value; Label_LocalIP.Dispatcher.InvokeOrExecute(() => { Label_LocalIP.GetBindingExpression(ContentProperty).UpdateTarget(); }); } }
 
+        private readonly AddIPViewModel addIPViewModel;
+        private readonly SettingsViewModel settingsViewModel;
+
         public PotatoWallUI()
         {
             PotatoWallClient.logger.WriteLog("Initializing resources for PotatoWallUI", LogLevel.Info);
             PotatoWallClient.logger.WriteLog($"CurrentThread CurrentCulture: {Thread.CurrentThread.CurrentCulture}", LogLevel.Info);
             PotatoWallClient.logger.WriteLog($"CurrentThread CurrentUICulture: {Thread.CurrentThread.CurrentUICulture}", LogLevel.Info);
 
-            IColorData = new ColorData();
-            IColorData.Load();
+            settingsViewModel = new SettingsViewModel();
+            settingsViewModel.IColorData.Load();
+
             ActiveIPList = new IPList<SrcIPData>(Application.Current.Dispatcher);
             IpWhiteList = new IPList<SrcIPData>(Application.Current.Dispatcher);
             IpBlackList = new IPList<SrcIPData>(Application.Current.Dispatcher);
@@ -123,7 +124,11 @@ namespace PotatoWall
             PotatoWallClient.ISettings.GUI.XTheme.PropertyChanged += ITheme_PropertyChanged;
             PotatoWallClient.ISettings.WinDivert.PropertyChanged += WinDivert_PropertyChanged;
 
-            theme_p.ItemsSource = IColorData.ColorDataList;
+            settingsViewModel.SelectionChangedEvent += Theme_P_SelectionChanged;
+            addIPViewModel = new AddIPViewModel();
+            addIPViewModel.AddIPBlackListEvent += Button_AddIPBlackList_Click;
+            addIPViewModel.AddIPWhiteListEvent += Button_AddIPWhiteList_Click;
+            addIPViewModel.AddIPAutoWhiteListEvent += Button_AddIPAutoWhiteList_Click;
         }
 
         private void WinDivert_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -229,7 +234,7 @@ namespace PotatoWall
             }
         }
 
-        private void Settings_Button_CLOSE_Click(object sender, RoutedEventArgs e)
+        private void DialogHost_Button_CLOSE_Click(object sender, RoutedEventArgs e)
         {
             WinDivert_CheckFilter();
         }
@@ -421,11 +426,11 @@ namespace PotatoWall
             richtextBox_console.ScrollToEnd();
         }
 
-        private void Theme_P_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Theme_P_SelectionChanged(object sender, ComboBoxSelectionChangedEventArgs e)
         {
             if (grid_loading.Visibility == Visibility.Hidden)
             {
-                if (theme_p.SelectedItem is ColorDataList list)
+                if (e.SelectedItem is ColorDataList list)
                 {
                     if (list.ColorMetadata == "REC")
                     {
@@ -459,8 +464,7 @@ namespace PotatoWall
         private void Window_Client_ContentRendered(object sender, EventArgs e)
         {
             PotatoWallClient.logger.WriteLog("Finished rendering content for PotatoWallUI", LogLevel.Info);
-
-            if (theme_p.SelectedItem is ColorDataList list)
+            if (settingsViewModel.IColorData.ColorDataList[PotatoWallClient.ISettings.GUI.XTheme.Color] is ColorDataList list)
             {
                 if (list.ColorMetadata == "REC")
                 {
@@ -478,11 +482,12 @@ namespace PotatoWall
 
         private void Button_Setting_Click(object sender, RoutedEventArgs e)
         {
-            DH_Settings.IsOpen = true;
+            _ = MaterialDesignThemes.Wpf.DialogHost.Show(settingsViewModel, "RootDialog");
         }
 
-        private void ListBox_players_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Button_AddIP_Click(object sender, RoutedEventArgs e)
         {
+            _ = MaterialDesignThemes.Wpf.DialogHost.Show(addIPViewModel, "RootDialog");
         }
 
         private void WriteToConsole(string text, Brush br, LogLevel logLevel, Exception ex)
@@ -925,6 +930,42 @@ namespace PotatoWall
             _ = IpBlackList.Remove((SrcIPData)listBox_blacklist.SelectedItem);
         }
 
+        private void MenuItem_CopySrcIP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SrcIPData srcIPData = (SrcIPData)listBox_activeiplist.SelectedItem;
+                if (srcIPData.IP != null) { Clipboard.SetText(srcIPData.IP); }
+            }
+            catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopySrcIP", LogLevel.Error); }
+        }
+
+        private void MenuItem_CopyDstIP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SrcIPData srcIPData = (SrcIPData)listBox_activeiplist.SelectedItem;
+                if (srcIPData.DstIPData != null && srcIPData.DstIPData.IP != null) { Clipboard.SetText(srcIPData.IP); }
+            }
+            catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopyDstIP", LogLevel.Error); }
+        }
+
+        private void MenuItem_CopyAll_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SrcIPData srcIPData = (SrcIPData)listBox_activeiplist.SelectedItem;
+                if (srcIPData != null)
+                {
+                    string data = $"Con: {srcIPData.Direction} \n" +
+                                  $"Src: {srcIPData.Country} {srcIPData.IP}:{srcIPData.Port} {srcIPData.ASN} \n" +
+                                  $"Dst: {srcIPData.DstIPData.Country} {srcIPData.DstIPData.IP}:{srcIPData.DstIPData.Port} {srcIPData.DstIPData.ASN} \n";
+                    Clipboard.SetText(data);
+                }
+            }
+            catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopyAll", LogLevel.Error); }
+        }
+
         private void DownloadFile(Uri url, string fileName, string newFileName)
         {
             long urlSize = GetFileSize(url);
@@ -1006,6 +1047,21 @@ namespace PotatoWall
                 DownloadFile(PotatoWallClient.CityDBurl, PotatoWallClient.CityDBSavePath, PotatoWallClient.CityDBPath);
             })
             { IsBackground = true }.Start();
+        }
+
+        private void Button_AddIPBlackList_Click(object sender, EventArgs e)
+        {
+            if (addIPViewModel.IP != null) { _ = IpBlackList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
+        }
+
+        private void Button_AddIPWhiteList_Click(object sender, EventArgs e)
+        {
+            if (addIPViewModel.IP != null) { _ = IpWhiteList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
+        }
+
+        private void Button_AddIPAutoWhiteList_Click(object sender, EventArgs e)
+        {
+            if (addIPViewModel.IP != null) { _ = IpAutoWhiteList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
         }
     }
 }

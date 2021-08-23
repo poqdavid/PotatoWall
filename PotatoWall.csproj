@@ -10,15 +10,15 @@
     <RootNamespace>PotatoWall</RootNamespace>
     <ApplicationIcon>potatowall.ico</ApplicationIcon>
     <Description>...</Description>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
     <Copyright>Copyright © 2016-2021 POQDavid</Copyright>
     <PackageId>PotatoWall</PackageId>
     <Product>PotatoWall</Product>
     <Company>POQDavid</Company>
     <Authors>POQDavid</Authors>
     <PackageIcon>potatowall.png</PackageIcon>
-    <Version>1.0.0.0</Version>
+    <Version>1.2.0.0</Version>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
     <PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
@@ -45,11 +45,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <OutputPath>bin\Debug\x86\</OutputPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Player.cs" />
-    <Compile Remove="Server.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Libs\WinDivert\x64\netdump.exe" />
