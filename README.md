@@ -1,4 +1,4 @@
-# PotatoWall
+# PotatoWall [![Build status](https://ci.appveyor.com/api/projects/status/au89qowy9wwhkcly/branch/master?svg=true)](https://ci.appveyor.com/project/poqdavid/potatowall/branch/master)
 By using WinDivert this application gives you the ability to allow/block connections.
 
 ----------

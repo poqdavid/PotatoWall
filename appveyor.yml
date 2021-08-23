@@ -1,0 +1,10 @@
+version: 1.2.0_{build}
+configuration: Release
+platform: x64
+install:
+- cmd: git submodule update --init
+before_build:
+- cmd: nuget restore
+build:
+  project: PotatoWall.sln
+  verbosity: minimal
