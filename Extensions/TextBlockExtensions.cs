@@ -17,18 +17,30 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.Text.RegularExpressions;
-using System.Windows.Controls;
+namespace PotatoWall.Extensions;
 
-namespace PotatoWall
+// <copyright file="TextBlockExtensions.cs" company="POQDavid">
+// Copyright (c) POQDavid. All rights reserved.
+// </copyright>
+// <author>POQDavid</author>
+// <summary>This is the TextBlockExtensions class.</summary>
+
+public static class TextBlockExtensions
 {
-    public class IPRule : ValidationRule
+    public static void SetText(this TextBlock textBlock, string text, bool waitUntilReturn = false)
     {
-        private readonly Regex RegEX = new(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
-
-        public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
+        Action append = () => textBlock.Text = text;
+        if (textBlock.CheckAccess())
         {
-            return RegEX.IsMatch((string)value) ? new ValidationResult(true, null) : new ValidationResult(false, "Invalid IP Address");
+            append();
+        }
+        else if (waitUntilReturn)
+        {
+            textBlock.Dispatcher.Invoke(append);
+        }
+        else
+        {
+            _ = textBlock.Dispatcher.BeginInvoke(append);
         }
     }
 }

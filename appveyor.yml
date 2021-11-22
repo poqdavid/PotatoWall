@@ -1,4 +1,4 @@
-version: 1.2.0_{build}
+version: 1.3.0_{build}
 configuration: Release
 platform: x64
 install:
@@ -8,3 +8,4 @@ before_build:
 build:
   project: PotatoWall.sln
   verbosity: minimal
+image: Visual Studio 2022

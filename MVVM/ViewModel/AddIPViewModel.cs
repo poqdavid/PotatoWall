@@ -17,7 +17,6 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System;
 using System.Windows.Input;
 
 namespace PotatoWall.MVVM.ViewModel

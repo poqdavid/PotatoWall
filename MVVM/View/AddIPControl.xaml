@@ -1,13 +1,13 @@
 ﻿<UserControl
     x:Class="PotatoWall.MVVM.View.AddIPControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:PotatoWall"
-    xmlns:localConverters="clr-namespace:PotatoWall.Converters"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localConverters="clr-namespace:PotatoWall.Converters"
     xmlns:viewmodel="clr-namespace:PotatoWall.MVVM.ViewModel"
+    xmlns:localutils="clr-namespace:PotatoWall.Utils"
     MinWidth="270"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
@@ -71,7 +71,7 @@
                     Path="IP"
                     UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>
-                        <local:IPRule />
+                        <localutils:IPRule />
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>

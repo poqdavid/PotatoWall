@@ -3,12 +3,12 @@
 <Window
     x:Class="PotatoWall.PotatoWallUI"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:PotatoWall"
     xmlns:localConverters="clr-namespace:PotatoWall.Converters"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="window_client"
     Title="PotatoWall"
     Width="1420"
@@ -368,17 +368,9 @@
                                     <ColumnDefinition Width="5" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-
-                                <RichTextBox
-                                    x:Name="richtextBox_console"
-                                    Grid.Column="0"
-                                    Margin="0,0,0,0"
-                                    Block.LineHeight="8"
-                                    IsReadOnly="True"
-                                    IsReadOnlyCaretVisible="True"
-                                    TextChanged="RichtextBox_Console_TextChanged"
-                                    VerticalScrollBarVisibility="Auto" />
-
+                                <ScrollViewer x:Name="ScrollViewer_Console" Grid.Column="0" Margin="0,0,0,0">
+                                    <TextBlock x:Name="TextBlock_Console" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" LineStackingStrategy="MaxHeight" Block.LineHeight="17" FontSize="14" TextWrapping="Wrap" />
+                                </ScrollViewer>
                                 <GridSplitter
                                     Grid.Column="1"
                                     Width="5"

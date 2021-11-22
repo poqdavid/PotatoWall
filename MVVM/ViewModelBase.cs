@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace PotatoWall.MVVM
+﻿namespace PotatoWall.MVVM
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
