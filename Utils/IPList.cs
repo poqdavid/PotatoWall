@@ -444,6 +444,8 @@ public class IPList<T> : ObservableCollection<SrcIPData>
 
     private delegate void MoveItemCallback(int oldIndex, int newIndex);
 
+    private static volatile bool ModifyIPList = true;
+
     public Dispatcher Dispatcher { get; }
 
     public IPList(Dispatcher dispatcher)
@@ -456,50 +458,23 @@ public class IPList<T> : ObservableCollection<SrcIPData>
         Dispatcher = Dispatcher.CurrentDispatcher;
     }
 
-    public bool AddContains(SrcIPData iPData)
-    {
-        if (!base.Contains(iPData))
-        {
-            Add(iPData);
-            return false;
-        }
-
-        return true;
-    }
-
     protected override void SetItem(int index, SrcIPData item)
     {
-        if (Dispatcher.CheckAccess())
+        try
         {
-            base.SetItem(index, item);
+            ModifyIPList = false;
+            if (Dispatcher.CheckAccess())
+            {
+                base.SetItem(index, item);
+            }
+            else
+            {
+                _ = Dispatcher.Invoke(DispatcherPriority.Send, new SetItemCallback(SetItem), index, new object[] { item });
+            }
         }
-        else
+        finally
         {
-            _ = Dispatcher.Invoke(DispatcherPriority.Send, new SetItemCallback(SetItem), index, new object[] { item });
-        }
-    }
-
-    protected override void RemoveItem(int index)
-    {
-        if (Dispatcher.CheckAccess())
-        {
-            base.RemoveItem(index);
-        }
-        else
-        {
-            _ = Dispatcher.Invoke(DispatcherPriority.Send, new RemoveItemCallback(RemoveItem), index);
-        }
-    }
-
-    protected override void ClearItems()
-    {
-        if (Dispatcher.CheckAccess())
-        {
-            base.ClearItems();
-        }
-        else
-        {
-            _ = Dispatcher.Invoke(DispatcherPriority.Send, new ClearItemsCallback(ClearItems));
+            ModifyIPList = true;
         }
     }
 
@@ -507,6 +482,7 @@ public class IPList<T> : ObservableCollection<SrcIPData>
     {
         try
         {
+            ModifyIPList = false;
             if (Dispatcher == null)
             {
                 base.InsertItem(index, item);
@@ -520,7 +496,14 @@ public class IPList<T> : ObservableCollection<SrcIPData>
                 _ = Dispatcher.Invoke(DispatcherPriority.Send, new InsertItemCallback(InsertItem), index, new object[] { item });
             }
         }
-        catch (Exception) { }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Debug(ex, "InsertItem: ");
+        }
+        finally
+        {
+            ModifyIPList = true;
+        }
     }
 
     protected override void MoveItem(int oldIndex, int newIndex)
@@ -532,6 +515,36 @@ public class IPList<T> : ObservableCollection<SrcIPData>
         else
         {
             _ = Dispatcher.Invoke(DispatcherPriority.Send, new MoveItemCallback(MoveItem), oldIndex, new object[] { newIndex });
+        }
+    }
+
+    protected override void RemoveItem(int index)
+    {
+        if (ModifyIPList)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                base.RemoveItem(index);
+            }
+            else
+            {
+                _ = Dispatcher.Invoke(DispatcherPriority.Send, new RemoveItemCallback(RemoveItem), index);
+            }
+        }
+    }
+
+    protected override void ClearItems()
+    {
+        if (ModifyIPList)
+        {
+            if (Dispatcher.CheckAccess())
+            {
+                base.ClearItems();
+            }
+            else
+            {
+                _ = Dispatcher.Invoke(DispatcherPriority.Send, new ClearItemsCallback(ClearItems));
+            }
         }
     }
 
@@ -557,5 +570,40 @@ public class IPList<T> : ObservableCollection<SrcIPData>
             }
         }
         return false;
+    }
+
+    public bool AddContains(SrcIPData iPData)
+    {
+        if (!base.Contains(iPData))
+        {
+            Add(iPData);
+            return false;
+        }
+
+        return true;
+    }
+
+    public void AddOrUpdate(SrcIPData iPData)
+    {
+        if (AddContains(iPData))
+        {
+            try
+            {
+                ModifyIPList = false;
+                SrcIPData item = this.FirstOrDefault(i => i.IP == iPData.IP);
+                if (item != null)
+                {
+                    item = iPData;
+                }
+            }
+            catch (Exception ex)
+            {
+                PotatoWallClient.Logger.Debug(ex, "AddOrUpdate: ");
+            }
+            finally
+            {
+                ModifyIPList = true;
+            }
+        }
     }
 }

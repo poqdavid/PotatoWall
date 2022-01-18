@@ -9,16 +9,16 @@
     <AssemblyName>PotatoWall</AssemblyName>
     <RootNamespace>PotatoWall</RootNamespace>
     <ApplicationIcon>potatowall.ico</ApplicationIcon>
-    <Description>...</Description>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
-    <Copyright>Copyright © 2016-2021 POQDavid</Copyright>
+    <Description>By using WinDivert this application gives you the ability to allow/block connections.</Description>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <FileVersion>1.5.0.0</FileVersion>
+    <Copyright>Copyright © 2016-2022 POQDavid</Copyright>
     <PackageId>PotatoWall</PackageId>
     <Product>PotatoWall</Product>
     <Company>POQDavid</Company>
     <Authors>POQDavid</Authors>
     <PackageIcon>potatowall.png</PackageIcon>
-    <Version>1.3.0.0</Version>
+    <Version>1.5.0.0</Version>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
     <PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
@@ -72,16 +72,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaterialDesignColors" Version="2.0.3" />
+    <PackageReference Include="MaterialDesignColors" Version="2.0.4" />
     <PackageReference Include="MaterialDesignExtensions" Version="3.3.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
-    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.1.9" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
+    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.0" />
     <PackageReference Include="MaterialDesignThemes.Wpf" Version="1.0.1" />
     <PackageReference Include="MaxMind.Db" Version="3.0.0" />
-    <PackageReference Include="MaxMind.GeoIP2" Version="4.0.1" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="4.7.12" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,17 +101,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Libs\WinDivert\x64\WinDivert.dll" Link="$(PlatformName)/%(Filename)%(Extension)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Libs\WinDivert\x64\WinDivert64.sys" Link="$(PlatformName)/%(Filename)%(Extension)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Libs\WinDivert\x86\WinDivert32.sys" Link="$(PlatformName)/%(Filename)%(Extension)">
+    <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Libs\WinDivert\$(Platform)\WinDivert.dll" Link="$(Platform)/%(Filename)%(Extension)">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Libs\WinDivert\$(Platform)\WinDivert64.sys" Link="$(Platform)/%(Filename)%(Extension)">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Libs\WinDivert\$(Platform)\WinDivert32.sys" Link="$(Platform)/%(Filename)%(Extension)">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
@@ -119,6 +130,10 @@
     <None Remove="Release\**" />
     <Page Remove="Libs\WinDivertSharp\**" />
     <Page Remove="Release\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Utils\Logger.cs" />
   </ItemGroup>
 
   <ItemGroup>

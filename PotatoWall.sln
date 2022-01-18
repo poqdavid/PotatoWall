@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PotatoWall", "PotatoWall.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinDivertSharp", "Libs\WinDivertSharp\WinDivertSharp\WinDivertSharp.csproj", "{F172B4D1-9F77-4DA6-A8BB-8CE2653BD7E6}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PotatoWallSetup", "Setup\PotatoWallSetup.wixproj", "{65A99019-0FEC-4808-835C-4465810A9275}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,10 @@ Global
 		{F172B4D1-9F77-4DA6-A8BB-8CE2653BD7E6}.Release|x64.Build.0 = Release|x64
 		{F172B4D1-9F77-4DA6-A8BB-8CE2653BD7E6}.Release|x86.ActiveCfg = Release|x86
 		{F172B4D1-9F77-4DA6-A8BB-8CE2653BD7E6}.Release|x86.Build.0 = Release|x86
+		{65A99019-0FEC-4808-835C-4465810A9275}.Debug|x64.ActiveCfg = Debug|x64
+		{65A99019-0FEC-4808-835C-4465810A9275}.Debug|x86.ActiveCfg = Debug|x86
+		{65A99019-0FEC-4808-835C-4465810A9275}.Release|x64.ActiveCfg = Release|x64
+		{65A99019-0FEC-4808-835C-4465810A9275}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

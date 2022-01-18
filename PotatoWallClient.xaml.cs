@@ -47,7 +47,8 @@ public partial class PotatoWallClient : Application
 
     private static PotatoWallUI iPotatoWallUI;
 
-    public static readonly PotatoWallLogger logger = new();
+    private static Logger logger;
+    private static TextWriter potatoWriter;
 
     public static Uri CityDBurl { get; set; } = new Uri("https://" + $"download.db-ip.com/free/dbip-city-lite-{DateTime.Now.Year}-{DateTime.Now.Month:d2}.mmdb.gz");
     public static string CityDBSavePath { get; set; } = Path.Combine(AppDataPath, $@"data\dbip-city-lite-{DateTime.Now.Year}-{DateTime.Now.Month:d2}.mmdb.gz");
@@ -59,29 +60,61 @@ public partial class PotatoWallClient : Application
     public static string ASNDBPath { get; set; } = Path.Combine(AppDataPath, @"data\asn.mmdb");
     public static Reader CityMMDBReader { get; set; }
     public static Reader ASNMMDBReader { get; set; }
+    public static Logger Logger { get => logger; set => logger = value; }
+    public static TextWriter PotatoWriter { get => potatoWriter; set => potatoWriter = value; }
 
     public void InitializeComponent()
     {
-        logger.WriteLog("Initializing resources for Client", LogLevel.Info);
-        Uri resourceLocater = new("/PotatoWall;V1.2.0.0;component/PotatoWallclient.xaml", UriKind.Relative);
+        logger.Information("Initializing resources for Client");
+        Uri resourceLocater = new("/PotatoWall;V1.5.0.0;component/PotatoWallclient.xaml", UriKind.Relative);
         LoadComponent(this, resourceLocater);
 
-        if (Directory.Exists(AppDataPath)) { logger.WriteLog($"AppData Path: {AppDataPath}", LogLevel.Info); }
-        else { logger.WriteLog($"Creating AppData folder {AppDataPath}", LogLevel.Info); Directory.CreateDirectory(AppDataPath); }
+        if (Directory.Exists(AppDataPath))
+        {
+            logger.Information("AppData Path: {AppDataPath}", AppDataPath);
+        }
+        else
+        {
+            logger.Information("Creating AppData folder {AppDataPath}", AppDataPath); Directory.CreateDirectory(AppDataPath);
+        }
 
-        if (Directory.Exists(DataPath)) { logger.WriteLog($"Data Path: {DataPath}", LogLevel.Info); }
-        else { logger.WriteLog($"Creating Data folder {DataPath}", LogLevel.Info); Directory.CreateDirectory(DataPath); }
+        if (Directory.Exists(DataPath))
+        {
+            logger.Information("Data Path: {DataPath}", DataPath);
+        }
+        else
+        {
+            logger.Information("Creating Data folder {DataPath}", DataPath); Directory.CreateDirectory(DataPath);
+        }
 
-        if (Directory.Exists(LogsPath)) { logger.WriteLog($"Logs Path: {LogsPath}", LogLevel.Info); }
-        else { Directory.CreateDirectory(LogsPath); logger.WriteLog($"Creating Logs folder {LogsPath}", LogLevel.Info); }
+        if (Directory.Exists(LogsPath))
+        {
+            logger.Information("Logs Path: {LogsPath}", LogsPath);
+        }
+        else
+        {
+            Directory.CreateDirectory(LogsPath); logger.Information("Creating Logs folder {LogsPath}", LogsPath);
+        }
 
-        if (File.Exists(ASNDBPath)) { logger.WriteLog($"Loading {ASNDBPath} database.", LogLevel.Info); ASNMMDBReader = new(ASNDBPath); }
-        else { logger.WriteLog($"{ASNDBPath} database does not Exist.", LogLevel.Info); }
+        if (File.Exists(ASNDBPath))
+        {
+            logger.Information("Loading {ASNDBPath} database.", ASNDBPath); ASNMMDBReader = new(ASNDBPath);
+        }
+        else
+        {
+            logger.Information("{ASNDBPath} database does not Exist.", ASNDBPath);
+        }
 
-        if (File.Exists(CityDBPath)) { logger.WriteLog($"Loading {CityDBPath} database.", LogLevel.Info); CityMMDBReader = new(CityDBPath); }
-        else { logger.WriteLog($"{CityDBPath} database does not Exist.", LogLevel.Info); }
+        if (File.Exists(CityDBPath))
+        {
+            logger.Information("Loading {CityDBPath} database.", CityDBPath); CityMMDBReader = new(CityDBPath);
+        }
+        else
+        {
+            logger.Information("{CityDBPath} database does not Exist.", CityDBPath);
+        }
 
-        logger.WriteLog("Initialized resources for Client", LogLevel.Info);
+        logger.Information("Initialized resources for Client");
 
         iPotatoWallUI = new PotatoWallUI();
         iPotatoWallUI.Show();
@@ -103,6 +136,17 @@ public partial class PotatoWallClient : Application
     [STAThread()]
     public static void Main()
     {
+        Thread.CurrentThread.Name = "MainThread";
+
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+            .CreateLogger();
+
         PotatoWallClient app = new();
 
         app.InitializeComponent();
@@ -112,6 +156,14 @@ public partial class PotatoWallClient : Application
     public PotatoWallClient()
     {
         ISettings.LoadSettings();
-        logger.WriteLog("Settings loaded", LogLevel.Info);
+        logger.Information("Settings loaded");
     }
+}
+
+[Flags]
+public enum LogLevel
+{
+    Info,
+    Error,
+    Trace
 }

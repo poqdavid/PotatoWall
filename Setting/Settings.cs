@@ -28,7 +28,7 @@ public class Settings : INotifyPropertyChanged
 {
     private string defaultRegEX = @"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$";
 
-    private bool defaultEnableRegEX = true;
+    private bool defaultEnableRegEX = false;
 
     private int defaultIPActivityTime = 35;
 

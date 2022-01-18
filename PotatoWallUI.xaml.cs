@@ -34,8 +34,6 @@ public partial class PotatoWallUI : Window
 
     private static Brush DefaultFrogroundC = Brushes.White;
 
-    private readonly List<PotatoParagraph> consoleQ = new();
-
     public IPList<SrcIPData> IpWhiteList { get; set; }
 
     public IPList<SrcIPData> IpBlackList { get; set; }
@@ -44,7 +42,6 @@ public partial class PotatoWallUI : Window
 
     public IPList<SrcIPData> ActiveIPList { get; set; }
 
-    private readonly PotatoTimer updater = new();
     private readonly PotatoTimer IPActivityCheck = new();
 
     private static IntPtr WinDFriesWallHandle = IntPtr.Zero;
@@ -59,8 +56,6 @@ public partial class PotatoWallUI : Window
     private static volatile bool ModeAuto;
     private static volatile bool AutoAddWhiteList;
     private static volatile bool allowpacket = true;
-
-    private static volatile bool ModifyActiveIPList = true;
 
     private static readonly List<string> currentNICIPAddress = new();
 
@@ -87,9 +82,11 @@ public partial class PotatoWallUI : Window
 
     public PotatoWallUI()
     {
-        PotatoWallClient.logger.WriteLog("Initializing resources for PotatoWallUI", LogLevel.Info);
-        PotatoWallClient.logger.WriteLog($"CurrentThread CurrentCulture: {Thread.CurrentThread.CurrentCulture}", LogLevel.Info);
-        PotatoWallClient.logger.WriteLog($"CurrentThread CurrentUICulture: {Thread.CurrentThread.CurrentUICulture}", LogLevel.Info);
+        Thread.CurrentThread.Name = "PotatoWallUI";
+
+        PotatoWallClient.Logger.Information("Initializing resources for PotatoWallUI");
+        PotatoWallClient.Logger.Information("CurrentThread CurrentCulture: {CurrentCulture}", Thread.CurrentThread.CurrentCulture);
+        PotatoWallClient.Logger.Information("CurrentThread CurrentUICulture: {CurrentUICulture}", Thread.CurrentThread.CurrentUICulture);
 
         ProductInfoHeaderValue productInfo = new("PotatoWall", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         ProductInfoHeaderValue moreInfo = new("(+https://poqdavid.github.io/PotatoWall/)");
@@ -110,7 +107,7 @@ public partial class PotatoWallUI : Window
         LocalIP = GetLocalIP();
         if (!currentNICIPAddress.Contains(LocalIP)) { currentNICIPAddress.Add(LocalIP); }
 
-        PotatoWallClient.logger.WriteLog("Initialized resources for PotatoWallUI", LogLevel.Info);
+        PotatoWallClient.Logger.Information("Initialized resources for PotatoWallUI");
         RegEX = new Regex(PotatoWallClient.ISettings.RegEX);
         PotatoWallClient.ISettings.PropertyChanged += ISettings_PropertyChanged;
         PotatoWallClient.ISettings.GUI.XTheme.PropertyChanged += ITheme_PropertyChanged;
@@ -141,15 +138,21 @@ public partial class PotatoWallUI : Window
 
     private void Window_Client_Loaded(object sender, RoutedEventArgs e)
     {
+        PotatoWallClient.PotatoWriter = new TextBlockWriter(TextBlock_Console, ScrollViewer_Console);
+        Console.SetOut(PotatoWallClient.PotatoWriter);
+        SelfLog.Enable(PotatoWallClient.PotatoWriter);
+
         Button_RegEX_Icon.Foreground = PotatoWallClient.ISettings.EnableRegEX ? Brushes.LimeGreen : DefaultFrogroundC;
 
         DefaultFrogroundC = Button_Setting_Icon.Foreground;
 
-        updater.PotatoTimerEvent += Updater_Event;
-        updater.Start(TimeSpan.FromMilliseconds(1));
-
         IPActivityCheck.PotatoTimerEvent += IPActivityCheck_Event;
         IPActivityCheck.Start(TimeSpan.FromSeconds(1));
+    }
+
+    private void Window_client_Closing(object sender, CancelEventArgs e)
+    {
+        StopWinDivert();
     }
 
     protected static string GetLocalIP()
@@ -175,15 +178,37 @@ public partial class PotatoWallUI : Window
         {
             try
             {
-                WriteToConsole($"Checking public IP by {hosturl}...", Brushes.Yellow, LogLevel.Info);
+                PotatoWallClient.Logger.Warning("Checking public IP by {hosturl}...", hosturl);
 
                 string strdata = httpClient.GetStringAsync(hosturl).Result;
                 extip = new Regex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}").Matches(strdata)[0].ToString();
                 break;
             }
-            catch (WebException ex)
+            catch (WebException webex)
             {
-                WriteToConsole($"Error: URL: {hosturl}...", Brushes.Yellow, LogLevel.Info, ex);
+                PotatoWallClient.Logger.Error(webex, "Error: URL: {hosturl}...", hosturl);
+                PotatoWallClient.Logger.Information("");
+                return extip;
+            }
+            catch (HttpRequestException httpex)
+            {
+                PotatoWallClient.Logger.Error(httpex, "Error: URL: {hosturl}...", hosturl);
+                PotatoWallClient.Logger.Information("");
+                return extip;
+            }
+            catch (SocketException socketex)
+            {
+                PotatoWallClient.Logger.Error(socketex, "Error: URL: {hosturl}...", hosturl);
+                PotatoWallClient.Logger.Information("");
+                return extip;
+            }
+            catch (AggregateException aex)
+            {
+                foreach (Exception exx in aex.InnerExceptions)
+                {
+                    PotatoWallClient.Logger.Error(exx, "Error: URL: {hosturl}...", hosturl);
+                    PotatoWallClient.Logger.Information("");
+                }
                 return extip;
             }
         }
@@ -193,41 +218,20 @@ public partial class PotatoWallUI : Window
 
     private void IPActivityCheck_Event(object sender, PotatoTimerEventEventArgs e)
     {
-        if (e.TimerState == TimerStates.Running)
+        try
         {
-            foreach (SrcIPData iPData in ActiveIPList.ToArray())
+            if (e.TimerState == TimerStates.Running)
             {
-                if (DateTime.Now.Subtract(iPData.LastActivity).Seconds >= PotatoWallClient.ISettings.IPActivityTime)
+                foreach (SrcIPData iPData in ActiveIPList.ToArray())
                 {
-                    if (ModifyActiveIPList) { _ = ActiveIPList.Remove(iPData); }
+                    if (DateTime.Now.Subtract(iPData.LastActivity).Seconds >= PotatoWallClient.ISettings.IPActivityTime)
+                    {
+                        _ = ActiveIPList.Remove(iPData);
+                    }
                 }
             }
         }
-    }
-
-    private void Updater_Event(object sender, PotatoTimerEventEventArgs e)
-    {
-        if (e.TimerState == TimerStates.Running)
-        {
-            Action append = () =>
-            {
-                if (consoleQ.Count != 0)
-                {
-                    TextBlock_Console.Inlines.Add(consoleQ[0].ToRun());
-                    ScrollViewer_Console.ScrollToEnd();
-                    consoleQ.RemoveAt(0);
-                }
-            };
-
-            if (TextBlock_Console.CheckAccess())
-            {
-                append();
-            }
-            else
-            {
-                _ = TextBlock_Console.Dispatcher.BeginInvoke(append);
-            }
-        }
+        catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
     }
 
     private void DialogHost_Button_CLOSE_Click(object sender, RoutedEventArgs e)
@@ -242,19 +246,21 @@ public partial class PotatoWallUI : Window
             Button_Enable.IsEnabled = false;
             new Thread(() =>
             {
-                WriteToConsole("Please wait checking connection...", Brushes.Yellow, LogLevel.Info);
+                Thread.CurrentThread.Name = "PotatoWallUI-Enable";
+
+                PotatoWallClient.Logger.Warning("Please wait checking connection...");
 
                 LocalIP = GetLocalIP();
 
                 if (!currentNICIPAddress.Contains(LocalIP)) { currentNICIPAddress.Add(LocalIP); }
 
-                WriteToConsole("Local IP: " + LocalIP, Brushes.Red);
-                WriteToConsole("");
+                PotatoWallClient.Logger.Information("Local IP: {localip}", LocalIP);
+                PotatoWallClient.Logger.Information("");
 
                 ExternalIP = GetExtIP();
 
-                WriteToConsole("Public IP: " + ExternalIP, Brushes.Red);
-                WriteToConsole("");
+                PotatoWallClient.Logger.Information("Public IP: {externalip}", ExternalIP);
+                PotatoWallClient.Logger.Information("");
 
                 WinDFriesWallRunning = true;
                 WinDivertInit("PotatoFriesWall", ref WinDFriesWallHandle, WinDivertOpenFlags.None);
@@ -263,6 +269,8 @@ public partial class PotatoWallUI : Window
                 WinDFriesWallMonitorRunning = true;
                 WinDivertInit("PotatoFriesWallMonitor", ref WinDFriesWallMonitorHandle, WinDivertOpenFlags.Sniff);
                 RunBackgroundThread(PotatoFriesWallMonitor, "PotatoFriesWallMonitor", ThreadPriority.Highest);
+
+                PotatoWallClient.Logger.Information("");
 
                 _ = Button_Enable.Dispatcher.BeginInvoke((Action)delegate ()
                 {
@@ -273,17 +281,32 @@ public partial class PotatoWallUI : Window
         }
         else
         {
-            WinDFriesWallRunning = false;
-            if (WinDFriesWallHandle != IntPtr.Zero)
-            {
-                _ = WinDivert.WinDivertClose(WinDFriesWallHandle);
-            }
+            Button_Enable.IsEnabled = false;
 
-            WinDFriesWallMonitorRunning = false;
-            if (WinDFriesWallMonitorHandle != IntPtr.Zero)
+            new Thread(() =>
             {
-                _ = WinDivert.WinDivertClose(WinDFriesWallMonitorHandle);
-            }
+                Thread.CurrentThread.Name = "PotatoWallUI-Disable";
+
+                WinDFriesWallRunning = false;
+                if (WinDFriesWallHandle != IntPtr.Zero)
+                {
+                    _ = WinDivert.WinDivertClose(WinDFriesWallHandle);
+                }
+
+                WinDFriesWallMonitorRunning = false;
+                if (WinDFriesWallMonitorHandle != IntPtr.Zero)
+                {
+                    _ = WinDivert.WinDivertClose(WinDFriesWallMonitorHandle);
+                }
+
+                StopWinDivert();
+
+                _ = Button_Enable.Dispatcher.BeginInvoke((Action)delegate ()
+                {
+                    Button_Enable.IsEnabled = true;
+                });
+            })
+            { IsBackground = true }.Start();
         }
     }
 
@@ -388,7 +411,7 @@ public partial class PotatoWallUI : Window
             Button_BlackList_Icon.Foreground = DefaultFrogroundC;
             Button_BlockAll_Icon.Foreground = DefaultFrogroundC;
 
-            WriteToConsole($"Please wait {PotatoWallClient.ISettings.IPSearchDuration} seconds adding IPs...", Brushes.Yellow);
+            PotatoWallClient.Logger.Warning("Please wait {ipsearchduration} seconds adding IPs...", PotatoWallClient.ISettings.IPSearchDuration);
             Button_AutoList.IsEnabled = false;
 
             new Thread(() =>
@@ -408,7 +431,7 @@ public partial class PotatoWallUI : Window
                               Button_AutoList.IsEnabled = true;
                           });
 
-                        WriteToConsole("Done finished adding IPs.", Brushes.Yellow);
+                        PotatoWallClient.Logger.Warning("Done finished adding IPs.");
                     }
                 }
             })
@@ -440,7 +463,7 @@ public partial class PotatoWallUI : Window
 
     public static void SetTheme(string cname)
     {
-        MaterialDesignThemes.Wpf.PaletteHelper paletteHelper = new();
+        PaletteHelper paletteHelper = new();
         SwatchesProvider swatchesProvider = new();
         Swatch color = swatchesProvider.Swatches.FirstOrDefault(a => a.Name == cname);
         paletteHelper.ReplacePrimaryColor(color);
@@ -448,14 +471,16 @@ public partial class PotatoWallUI : Window
 
     public static void SetTheme(Color c)
     {
-        MaterialDesignThemes.Wpf.PaletteHelper paletteHelper = new();
+        PaletteHelper paletteHelper = new();
 
         paletteHelper.ChangePrimaryColor(c);
     }
 
     private void Window_Client_ContentRendered(object sender, EventArgs e)
     {
-        PotatoWallClient.logger.WriteLog("Finished rendering content for PotatoWallUI", LogLevel.Info);
+        PotatoWallClient.Logger.Information("Finished rendering content for PotatoWallUI");
+        PotatoWallClient.Logger.Information("");
+
         if (settingsViewModel.IColorData.ColorDataList[PotatoWallClient.ISettings.GUI.XTheme.Color] is ColorDataList list)
         {
             if (list.ColorMetadata == "REC")
@@ -474,68 +499,26 @@ public partial class PotatoWallUI : Window
 
     private void Button_Setting_Click(object sender, RoutedEventArgs e)
     {
-        _ = MaterialDesignThemes.Wpf.DialogHost.Show(settingsViewModel, "RootDialog");
+        _ = DialogHost.Show(settingsViewModel, "RootDialog");
     }
 
     private void Button_AddIP_Click(object sender, RoutedEventArgs e)
     {
-        _ = MaterialDesignThemes.Wpf.DialogHost.Show(addIPViewModel, "RootDialog");
+        _ = DialogHost.Show(addIPViewModel, "RootDialog");
     }
 
-    private void WriteToConsole(string text, Brush br, LogLevel logLevel, Exception ex)
-    {
-        string textout = text;
-        if (!String.IsNullOrEmpty(text))
-        {
-            textout = $"[{DateTime.Now:HH:mm:ss}] " + text;
-        }
-
-        consoleQ.Add(new PotatoParagraph(textout, Brushes.Transparent, br, true, false, false));
-        PotatoWallClient.logger.WriteLog(ex, text, logLevel);
-    }
-
-    private void WriteToConsole(string text, Brush br, LogLevel logLevel)
-    {
-        string textout = text;
-        if (!String.IsNullOrEmpty(text))
-        {
-            textout = $"[{DateTime.Now:HH:mm:ss}] " + text;
-        }
-
-        consoleQ.Add(new PotatoParagraph(textout, Brushes.Transparent, br, true, false, false));
-        PotatoWallClient.logger.WriteLog(text, logLevel);
-    }
-
-    private void WriteToConsole(string text, Brush br)
-    {
-        string textout = text;
-        if (!String.IsNullOrEmpty(text))
-        {
-            textout = $"[{DateTime.Now:HH:mm:ss}] " + text;
-        }
-
-        consoleQ.Add(new PotatoParagraph(textout, Brushes.Transparent, br, true, false, false));
-        PotatoWallClient.logger.WriteLog(text, LogLevel.Info);
-    }
-
-    private void WriteToConsole(string text)
-    {
-        WriteToConsole(text, Brushes.Green);
-    }
-
-    private void WinDivert_CheckFilter()
+    private static void WinDivert_CheckFilter()
     {
         uint errorPos = 0;
 
         if (!WinDivert.WinDivertHelperCheckFilter(PotatoWallClient.ISettings.WinDivert.Filter, WinDivertLayer.Network, out string errorMessage, ref errorPos))
         {
-            WriteToConsole(string.Format(Thread.CurrentThread.CurrentCulture, "Filter string is invalid at position {0}.\nError Message:\n{1}", errorPos, errorMessage), Brushes.Red);
+            PotatoWallClient.Logger.Warning("Filter string is invalid at position {errorpos}.\nError Message:\n{errormessage}", errorPos, errorMessage);
         }
     }
 
     private void PotatoFriesWall()
     {
-        string name = "PotatoFriesWall";
         WinDivertBuffer packet = new();
 
         WinDivertAddress addr = new();
@@ -550,180 +533,182 @@ public partial class PotatoWallUI : Window
 
         do
         {
-            if (WinDFriesWallRunning)
+            try
             {
-                readLen = 0;
-
-                recvEvent = Kernel32.CreateEvent(IntPtr.Zero, false, false, IntPtr.Zero);
-
-                string SrcIPAddress = "0.0.0.0";
-                ushort SrcPort = 0;
-
-                string DstIPAddress = "0.0.0.0";
-                ushort DstPort = 0;
-
-                allowpacket = true;
-
-                if (recvEvent == IntPtr.Zero)
+                if (WinDFriesWallRunning)
                 {
-                    WriteToConsole($"{name}: Failed to initialize receive IO event.", Brushes.Red);
-                    continue;
-                }
+                    readLen = 0;
 
-                addr.Reset();
+                    recvEvent = Kernel32.CreateEvent(IntPtr.Zero, false, false, IntPtr.Zero);
 
-                if (PotatoWallClient.ISettings.WinDivert.WinDivertRecvEx)
-                {
-                    recvAsyncIoLen = 0;
-                    recvOverlapped = new NativeOverlapped
-                    {
-                        EventHandle = recvEvent
-                    };
+                    string SrcIPAddress = "0.0.0.0";
+                    ushort SrcPort = 0;
 
-                    if (!WinDivert.WinDivertRecvEx(WinDFriesWallHandle, packet, 0, ref addr, ref readLen, ref recvOverlapped))
-                    {
-                        int error = Marshal.GetLastWin32Error();
+                    string DstIPAddress = "0.0.0.0";
+                    ushort DstPort = 0;
 
-                        // 997 == ERROR_IO_PENDING
-                        if (error != 997)
-                        {
-                            WriteToConsole($"{name}: Unknown IO error ID {error} while awaiting result.", Brushes.Red);
-
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
-
-                        while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout) { }
-
-                        if (!Kernel32.GetOverlappedResult(WinDFriesWallHandle, ref recvOverlapped, ref recvAsyncIoLen, false))
-                        {
-                            WriteToConsole($"{name}: Failed to get overlapped result.", Brushes.Red);
-
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
-
-                        readLen = recvAsyncIoLen;
-                    }
-                }
-                else if (PotatoWallClient.ISettings.WinDivert.WinDivertRecv)
-                {
-                    if (!WinDivert.WinDivertRecv(WinDFriesWallHandle, packet, ref addr, ref readLen))
-                    {
-                        int error = Marshal.GetLastWin32Error();
-
-                        // 997 == ERROR_IO_PENDING
-                        if (error != 997)
-                        {
-                            WriteToConsole($"{name}: Unknown IO error ID {error} while awaiting result.", Brushes.Red);
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
-
-                        while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout)
-                        {
-                        }
-                    }
-                }
-
-                _ = Kernel32.CloseHandle(recvEvent);
-                WinDivertParseResult WD_PR = WinDivert.WinDivertHelperParsePacket(packet, readLen);
-
-                unsafe
-                {
-                    if (WD_PR.IPv4Header != null && WD_PR.UdpHeader != null)
-                    {
-                        //WriteToConsole($"V4 UDP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.UdpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.UdpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
-
-                        SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
-                        SrcPort = WD_PR.UdpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
-                        DstPort = WD_PR.UdpHeader->DstPort;
-                    }
-                    else if (WD_PR.IPv6Header != null && WD_PR.UdpHeader != null)
-                    {
-                        SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
-                        SrcPort = WD_PR.UdpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
-                        DstPort = WD_PR.UdpHeader->DstPort;
-                    }
-
-                    if (WD_PR.IPv4Header != null && WD_PR.TcpHeader != null)
-                    {
-                        //WriteToConsole($"V4 TCP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.TcpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.TcpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
-
-                        SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
-                        SrcPort = WD_PR.TcpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
-                        DstPort = WD_PR.TcpHeader->DstPort;
-                    }
-                    else if (WD_PR.IPv6Header != null && WD_PR.TcpHeader != null)
-                    {
-                        SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
-                        SrcPort = WD_PR.TcpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
-                        DstPort = WD_PR.TcpHeader->DstPort;
-                    }
-                }
-
-                string ChkIPAddress = SrcIPAddress;
-                string Direction = addr.Direction.ToString();
-
-                if (ModeBlockAll) { allowpacket = false || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX); }
-
-                if (ModeBlackList)
-                {
-                    allowpacket = !IpBlackList.Contains(ChkIPAddress) || IpBlackList.Count == 0;
-                }
-
-                if (ModeWhiteList)
-                {
-                    allowpacket = IpWhiteList.Contains(ChkIPAddress) || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX);
-                }
-
-                if (ModeAuto)
-                {
-                    allowpacket = IpAutoWhiteList.Contains(ChkIPAddress) || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX);
-                }
-
-                if (!ModeBlockAll && !ModeBlackList && !ModeWhiteList && !ModeAuto)
-                {
                     allowpacket = true;
-                }
 
-                if (ChkIPAddress == LocalIP) { allowpacket = true; }
-                if (ChkIPAddress == ExternalIP) { allowpacket = true; }
+                    if (recvEvent == IntPtr.Zero)
+                    {
+                        PotatoWallClient.Logger.Warning("Failed to initialize receive IO event.");
+                        continue;
+                    }
 
-                if (allowpacket)
-                {
+                    addr.Reset();
+
                     if (PotatoWallClient.ISettings.WinDivert.WinDivertRecvEx)
                     {
-                        if (!WinDivert.WinDivertSendEx(WinDFriesWallHandle, packet, readLen, 0, ref addr))
+                        recvAsyncIoLen = 0;
+                        recvOverlapped = new NativeOverlapped
                         {
-                            WriteToConsole($"{name}: Write Err: {Marshal.GetLastWin32Error()}", Brushes.Red);
+                            EventHandle = recvEvent
+                        };
+
+                        if (!WinDivert.WinDivertRecvEx(WinDFriesWallHandle, packet, 0, ref addr, ref readLen, ref recvOverlapped))
+                        {
+                            int error = Marshal.GetLastWin32Error();
+
+                            // 997 == ERROR_IO_PENDING
+                            if (error != 997)
+                            {
+                                PotatoWallClient.Logger.Warning("Unknown IO error ID {error} while awaiting result.", error);
+
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
+
+                            while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout) { }
+
+                            if (!Kernel32.GetOverlappedResult(WinDFriesWallHandle, ref recvOverlapped, ref recvAsyncIoLen, false))
+                            {
+                                PotatoWallClient.Logger.Warning("Failed to get overlapped result.");
+
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
+
+                            readLen = recvAsyncIoLen;
                         }
                     }
                     else if (PotatoWallClient.ISettings.WinDivert.WinDivertRecv)
                     {
-                        if (!WinDivert.WinDivertSend(WinDFriesWallHandle, packet, readLen, ref addr))
+                        if (!WinDivert.WinDivertRecv(WinDFriesWallHandle, packet, ref addr, ref readLen))
                         {
-                            WriteToConsole($"{name}: Write Err: {Marshal.GetLastWin32Error()}", Brushes.Red);
+                            int error = Marshal.GetLastWin32Error();
+
+                            // 997 == ERROR_IO_PENDING
+                            if (error != 997)
+                            {
+                                PotatoWallClient.Logger.Warning("Unknown IO error ID {error} while awaiting result.");
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
+
+                            while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout)
+                            {
+                            }
+                        }
+                    }
+
+                    _ = Kernel32.CloseHandle(recvEvent);
+                    WinDivertParseResult WD_PR = WinDivert.WinDivertHelperParsePacket(packet, readLen);
+
+                    unsafe
+                    {
+                        if (WD_PR.IPv4Header != null && WD_PR.UdpHeader != null)
+                        {
+                            //WriteToConsole($"V4 UDP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.UdpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.UdpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
+
+                            SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
+                            SrcPort = WD_PR.UdpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
+                            DstPort = WD_PR.UdpHeader->DstPort;
+                        }
+                        else if (WD_PR.IPv6Header != null && WD_PR.UdpHeader != null)
+                        {
+                            SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
+                            SrcPort = WD_PR.UdpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
+                            DstPort = WD_PR.UdpHeader->DstPort;
+                        }
+
+                        if (WD_PR.IPv4Header != null && WD_PR.TcpHeader != null)
+                        {
+                            //WriteToConsole($"V4 TCP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.TcpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.TcpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
+
+                            SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
+                            SrcPort = WD_PR.TcpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
+                            DstPort = WD_PR.TcpHeader->DstPort;
+                        }
+                        else if (WD_PR.IPv6Header != null && WD_PR.TcpHeader != null)
+                        {
+                            SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
+                            SrcPort = WD_PR.TcpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
+                            DstPort = WD_PR.TcpHeader->DstPort;
+                        }
+                    }
+
+                    string ChkIPAddress = SrcIPAddress;
+                    string Direction = addr.Direction.ToString();
+
+                    if (ModeBlockAll) { allowpacket = false || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX); }
+
+                    if (ModeBlackList)
+                    {
+                        allowpacket = !IpBlackList.Contains(ChkIPAddress) || IpBlackList.Count == 0;
+                    }
+
+                    if (ModeWhiteList)
+                    {
+                        allowpacket = IpWhiteList.Contains(ChkIPAddress) || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX);
+                    }
+
+                    if (ModeAuto)
+                    {
+                        allowpacket = IpAutoWhiteList.Contains(ChkIPAddress) || (RegEX.IsMatch(ChkIPAddress) && PotatoWallClient.ISettings.EnableRegEX);
+                    }
+
+                    if (!ModeBlockAll && !ModeBlackList && !ModeWhiteList && !ModeAuto)
+                    {
+                        allowpacket = true;
+                    }
+
+                    if (ChkIPAddress == LocalIP) { allowpacket = true; }
+                    if (ChkIPAddress == ExternalIP) { allowpacket = true; }
+
+                    if (allowpacket)
+                    {
+                        if (PotatoWallClient.ISettings.WinDivert.WinDivertRecvEx)
+                        {
+                            if (!WinDivert.WinDivertSendEx(WinDFriesWallHandle, packet, readLen, 0, ref addr))
+                            {
+                                PotatoWallClient.Logger.Warning("Write Err: {getlastwin32error}", Marshal.GetLastWin32Error());
+                            }
+                        }
+                        else if (PotatoWallClient.ISettings.WinDivert.WinDivertRecv)
+                        {
+                            if (!WinDivert.WinDivertSend(WinDFriesWallHandle, packet, readLen, ref addr))
+                            {
+                                PotatoWallClient.Logger.Warning("Write Err: {getlastwin32error}", Marshal.GetLastWin32Error());
+                            }
                         }
                     }
                 }
             }
+            catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
         }
         while (WinDFriesWallRunning);
     }
 
     private void PotatoFriesWallMonitor()
     {
-        string name = "PotatoFriesWallMonitor";
-
         WinDivertBuffer packet = new();
 
         WinDivertAddress addr = new();
@@ -738,178 +723,171 @@ public partial class PotatoWallUI : Window
 
         do
         {
-            if (WinDFriesWallMonitorRunning)
+            try
             {
-                readLen = 0;
-
-                recvEvent = Kernel32.CreateEvent(IntPtr.Zero, false, false, IntPtr.Zero);
-
-                string SrcIPAddress = "0.0.0.0";
-                ushort SrcPort = 0;
-
-                string DstIPAddress = "0.0.0.0";
-                ushort DstPort = 0;
-
-                if (recvEvent == IntPtr.Zero)
+                if (WinDFriesWallMonitorRunning)
                 {
-                    WriteToConsole($"{name}: Failed to initialize receive IO event.", Brushes.Red);
-                    continue;
-                }
+                    readLen = 0;
 
-                addr.Reset();
+                    recvEvent = Kernel32.CreateEvent(IntPtr.Zero, false, false, IntPtr.Zero);
 
-                if (PotatoWallClient.ISettings.WinDivert.WinDivertRecvEx)
-                {
-                    recvAsyncIoLen = 0;
-                    recvOverlapped = new NativeOverlapped
+                    string SrcIPAddress = "0.0.0.0";
+                    ushort SrcPort = 0;
+
+                    string DstIPAddress = "0.0.0.0";
+                    ushort DstPort = 0;
+
+                    if (recvEvent == IntPtr.Zero)
                     {
-                        EventHandle = recvEvent
-                    };
-
-                    if (!WinDivert.WinDivertRecvEx(WinDFriesWallMonitorHandle, packet, 0, ref addr, ref readLen, ref recvOverlapped))
-                    {
-                        int error = Marshal.GetLastWin32Error();
-
-                        // 997 == ERROR_IO_PENDING
-                        if (error != 997)
-                        {
-                            WriteToConsole($"{name}: Unknown IO error ID {0} while awaiting result.", Brushes.Red);
-
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
-
-                        while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout) { }
-
-                        if (!Kernel32.GetOverlappedResult(WinDFriesWallMonitorHandle, ref recvOverlapped, ref recvAsyncIoLen, false))
-                        {
-                            WriteToConsole($"{name}: Failed to get overlapped result.", Brushes.Red);
-
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
-
-                        readLen = recvAsyncIoLen;
+                        PotatoWallClient.Logger.Warning("Failed to initialize receive IO event.");
+                        continue;
                     }
-                }
-                else if (PotatoWallClient.ISettings.WinDivert.WinDivertRecv)
-                {
-                    if (!WinDivert.WinDivertRecv(WinDFriesWallMonitorHandle, packet, ref addr, ref readLen))
+
+                    addr.Reset();
+
+                    if (PotatoWallClient.ISettings.WinDivert.WinDivertRecvEx)
                     {
-                        int error = Marshal.GetLastWin32Error();
-
-                        // 997 == ERROR_IO_PENDING
-                        if (error != 997)
+                        recvAsyncIoLen = 0;
+                        recvOverlapped = new NativeOverlapped
                         {
-                            WriteToConsole($"{name}: Unknown IO error ID {0} while awaiting result.", Brushes.Red);
-                            _ = Kernel32.CloseHandle(recvEvent);
-                            continue;
-                        }
+                            EventHandle = recvEvent
+                        };
 
-                        while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout)
+                        if (!WinDivert.WinDivertRecvEx(WinDFriesWallMonitorHandle, packet, 0, ref addr, ref readLen, ref recvOverlapped))
                         {
+                            int error = Marshal.GetLastWin32Error();
+
+                            // 997 == ERROR_IO_PENDING
+                            if (error != 997)
+                            {
+                                PotatoWallClient.Logger.Warning("Unknown IO error ID {error} while awaiting result.", error);
+
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
+
+                            while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout) { }
+
+                            if (!Kernel32.GetOverlappedResult(WinDFriesWallMonitorHandle, ref recvOverlapped, ref recvAsyncIoLen, false))
+                            {
+                                PotatoWallClient.Logger.Warning("Failed to get overlapped result.");
+
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
+
+                            readLen = recvAsyncIoLen;
                         }
                     }
-                }
-
-                _ = Kernel32.CloseHandle(recvEvent);
-                WinDivertParseResult WD_PR = WinDivert.WinDivertHelperParsePacket(packet, readLen);
-
-                unsafe
-                {
-                    if (WD_PR.IPv4Header != null && WD_PR.UdpHeader != null)
+                    else if (PotatoWallClient.ISettings.WinDivert.WinDivertRecv)
                     {
-                        //WriteToConsole($"V4 UDP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.UdpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.UdpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
+                        if (!WinDivert.WinDivertRecv(WinDFriesWallMonitorHandle, packet, ref addr, ref readLen))
+                        {
+                            int error = Marshal.GetLastWin32Error();
 
-                        SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
-                        SrcPort = WD_PR.UdpHeader->SrcPort;
+                            // 997 == ERROR_IO_PENDING
+                            if (error != 997)
+                            {
+                                PotatoWallClient.Logger.Warning("Unknown IO error ID {error} while awaiting result.", error);
+                                _ = Kernel32.CloseHandle(recvEvent);
+                                continue;
+                            }
 
-                        DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
-                        DstPort = WD_PR.UdpHeader->DstPort;
-                    }
-                    else if (WD_PR.IPv6Header != null && WD_PR.UdpHeader != null)
-                    {
-                        SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
-                        SrcPort = WD_PR.UdpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
-                        DstPort = WD_PR.UdpHeader->DstPort;
+                            while (Kernel32.WaitForSingleObject(recvEvent, 1000) == (uint)WaitForSingleObjectResult.WaitTimeout)
+                            {
+                            }
+                        }
                     }
 
-                    if (WD_PR.IPv4Header != null && WD_PR.TcpHeader != null)
+                    _ = Kernel32.CloseHandle(recvEvent);
+                    WinDivertParseResult WD_PR = WinDivert.WinDivertHelperParsePacket(packet, readLen);
+
+                    unsafe
                     {
-                        //WriteToConsole($"V4 TCP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.TcpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.TcpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
+                        if (WD_PR.IPv4Header != null && WD_PR.UdpHeader != null)
+                        {
+                            //WriteToConsole($"V4 UDP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.UdpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.UdpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
 
-                        SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
-                        SrcPort = WD_PR.TcpHeader->SrcPort;
+                            SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
+                            SrcPort = WD_PR.UdpHeader->SrcPort;
 
-                        DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
-                        DstPort = WD_PR.TcpHeader->DstPort;
+                            DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
+                            DstPort = WD_PR.UdpHeader->DstPort;
+                        }
+                        else if (WD_PR.IPv6Header != null && WD_PR.UdpHeader != null)
+                        {
+                            SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
+                            SrcPort = WD_PR.UdpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
+                            DstPort = WD_PR.UdpHeader->DstPort;
+                        }
+
+                        if (WD_PR.IPv4Header != null && WD_PR.TcpHeader != null)
+                        {
+                            //WriteToConsole($"V4 TCP packet {addr.Direction} from {WD_PR.IPv4Header->SrcAddr}:{WD_PR.TcpHeader->SrcPort.SWPOrder()} to {WD_PR.IPv4Header->DstAddr}:{WD_PR.TcpHeader->DstPort.SWPOrder()}", Brushes.Yellow);
+
+                            SrcIPAddress = $"{WD_PR.IPv4Header->SrcAddr}";
+                            SrcPort = WD_PR.TcpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv4Header->DstAddr}";
+                            DstPort = WD_PR.TcpHeader->DstPort;
+                        }
+                        else if (WD_PR.IPv6Header != null && WD_PR.TcpHeader != null)
+                        {
+                            SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
+                            SrcPort = WD_PR.TcpHeader->SrcPort;
+
+                            DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
+                            DstPort = WD_PR.TcpHeader->DstPort;
+                        }
                     }
-                    else if (WD_PR.IPv6Header != null && WD_PR.TcpHeader != null)
+
+                    string ChkIPAddress = SrcIPAddress;
+                    string Direction = addr.Direction.ToString();
+
+                    if (AutoAddWhiteList)
                     {
-                        SrcIPAddress = $"{WD_PR.IPv6Header->SrcAddr}";
-                        SrcPort = WD_PR.TcpHeader->SrcPort;
-
-                        DstIPAddress = $"{WD_PR.IPv6Header->DstAddr}";
-                        DstPort = WD_PR.TcpHeader->DstPort;
+                        _ = addr.Direction == WinDivertDirection.Inbound
+                            ? IpAutoWhiteList.AddContains(new SrcIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}", DstIPAddress, $"{DstPort.SWPOrder()}"))
+                            : IpAutoWhiteList.AddContains(new SrcIPData(DstIPAddress, $"{DstPort.SWPOrder()}", SrcIPAddress, $"{SrcPort.SWPOrder()}"));
                     }
-                }
 
-                string ChkIPAddress = SrcIPAddress;
-                string Direction = addr.Direction.ToString();
-
-                if (AutoAddWhiteList)
-                {
-                    _ = addr.Direction == WinDivertDirection.Inbound
-                        ? IpAutoWhiteList.AddContains(new SrcIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}", DstIPAddress, $"{DstPort.SWPOrder()}"))
-                        : IpAutoWhiteList.AddContains(new SrcIPData(DstIPAddress, $"{DstPort.SWPOrder()}", SrcIPAddress, $"{SrcPort.SWPOrder()}"));
-                }
-
-                if (!currentNICIPAddress.Contains(SrcIPAddress))
-                {
-                    ModifyActiveIPList = false;
-                    Dictionary<string, SrcIPData> datasrc = ActiveIPList.ToDictionary(x => x.IP, x => x);
-
-                    if (ActiveIPList.AddContains(new SrcIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}", DstIPAddress, $"{DstPort.SWPOrder()}", Direction)))
+                    if (!currentNICIPAddress.Contains(SrcIPAddress))
                     {
-                        datasrc[SrcIPAddress].Port = $"{SrcPort.SWPOrder()}";
-                        datasrc[SrcIPAddress].Direction = Direction;
-
-                        datasrc[SrcIPAddress].DstIPData.IP = DstIPAddress;
-                        datasrc[SrcIPAddress].DstIPData.Port = $"{DstPort.SWPOrder()}";
+                        ActiveIPList.AddOrUpdate(new SrcIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}", DstIPAddress, $"{DstPort.SWPOrder()}", Direction));
                     }
-                    ModifyActiveIPList = true;
                 }
             }
+            catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
         }
         while (WinDFriesWallMonitorRunning);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void WinDivertInit(string name, ref IntPtr WinDHandle, WinDivertOpenFlags flags)
+    private static void WinDivertInit(string name, ref IntPtr WinDHandle, WinDivertOpenFlags flags)
     {
-        WriteToConsole($"{name}: Starting WinDivertInit()!");
+        PotatoWallClient.Logger.Information("{name} > Starting WinDivertInit()!", name);
 
         string filter = PotatoWallClient.ISettings.WinDivert.Filter;
-        WriteToConsole($"{name}: WinDivert Filter= \"{filter}\"");
+        PotatoWallClient.Logger.Information("{name} > WinDivert Filter= \"{filter}\"", name, filter);
 
         WinDivert_CheckFilter();
 
         WinDHandle = WinDivert.WinDivertOpen(filter, WinDivertLayer.Network, 0, flags);
 
-        WriteToConsole($"{name}: WinDivert Handle = {WinDHandle}");
+        PotatoWallClient.Logger.Information("{name} > WinDivert Handle = {WinDHandle}", name, WinDHandle);
 
         _ = WinDivert.WinDivertSetParam(WinDHandle, WinDivertParam.QueueLen, PotatoWallClient.ISettings.WinDivert.QueueLen);
         _ = WinDivert.WinDivertSetParam(WinDHandle, WinDivertParam.QueueTime, PotatoWallClient.ISettings.WinDivert.QueueTime);
         _ = WinDivert.WinDivertSetParam(WinDHandle, WinDivertParam.QueueSize, PotatoWallClient.ISettings.WinDivert.QueueSize);
 
-        WriteToConsole($"{name}: Started WinDivertInit()!");
+        PotatoWallClient.Logger.Information("{name} > Started WinDivertInit()!", name);
     }
 
-    private void RunBackgroundThread(ThreadStart start, string thname, ThreadPriority tp)
+    private static void RunBackgroundThread(ThreadStart start, string thname, ThreadPriority tp)
     {
-        WriteToConsole($"{thname}: Starting background thread!");
+        PotatoWallClient.Logger.Information("{thname} > Starting background thread!", thname);
         Thread background = new(start)
         {
             IsBackground = true,
@@ -918,7 +896,8 @@ public partial class PotatoWallUI : Window
         };
 
         background.Start();
-        WriteToConsole($"{thname}: Started background thread!");
+
+        PotatoWallClient.Logger.Information("{thname} > Started background thread!", thname);
     }
 
     private void MenuItem_BlacklistAdd_Click(object sender, RoutedEventArgs e)
@@ -958,7 +937,7 @@ public partial class PotatoWallUI : Window
             SrcIPData srcIPData = (SrcIPData)listBox_activeiplist.SelectedItem;
             if (srcIPData.IP != null) { Clipboard.SetText(srcIPData.IP); }
         }
-        catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopySrcIP", LogLevel.Error); }
+        catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
     }
 
     private void MenuItem_CopyDstIP_Click(object sender, RoutedEventArgs e)
@@ -968,7 +947,7 @@ public partial class PotatoWallUI : Window
             SrcIPData srcIPData = (SrcIPData)listBox_activeiplist.SelectedItem;
             if (srcIPData.DstIPData != null && srcIPData.DstIPData.IP != null) { Clipboard.SetText(srcIPData.IP); }
         }
-        catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopyDstIP", LogLevel.Error); }
+        catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
     }
 
     private void MenuItem_CopyAll_Click(object sender, RoutedEventArgs e)
@@ -984,7 +963,7 @@ public partial class PotatoWallUI : Window
                 Clipboard.SetText(data);
             }
         }
-        catch (Exception ex) { PotatoWallClient.logger.WriteLog(ex, "Error: CopyAll", LogLevel.Error); }
+        catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
     }
 
     private async Task<bool> DownloadFile(Uri url, string fileName, string newFileName)
@@ -998,7 +977,7 @@ public partial class PotatoWallUI : Window
                 if (fi.Length == urlSize)
                 {
                     GZDecompress(fi, newFileName);
-                    WriteToConsole("");
+                    PotatoWallClient.Logger.Information("");
                     return true;
                 }
                 else
@@ -1006,7 +985,7 @@ public partial class PotatoWallUI : Window
                     File.Delete(fi.FullName);
                     await WClient(url, fileName, urlSize);
                     GZDecompress(fi, newFileName);
-                    WriteToConsole("");
+                    PotatoWallClient.Logger.Information("");
                     return true;
                 }
             }
@@ -1014,7 +993,7 @@ public partial class PotatoWallUI : Window
             {
                 await WClient(url, fileName, urlSize);
                 GZDecompress(fi, newFileName);
-                WriteToConsole("");
+                PotatoWallClient.Logger.Information("");
                 return true;
             }
         }
@@ -1023,8 +1002,8 @@ public partial class PotatoWallUI : Window
 
     private async Task<bool> WClient(Uri url, string fileName, long totalSize)
     {
-        WriteToConsole($"Downloading {url}...", Brushes.Green);
-        WriteToConsole($"File Size: {GetMB(totalSize)}MB", Brushes.Yellow);
+        PotatoWallClient.Logger.Information("Downloading {url}...", url);
+        PotatoWallClient.Logger.Warning("File Size: {totalsize}MB", GetMB(totalSize));
 
         using (HttpResponseMessage HttpRM = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
         {
@@ -1055,11 +1034,11 @@ public partial class PotatoWallUI : Window
             }
         }
 
-        WriteToConsole("Finished Downloading.", Brushes.Yellow);
+        PotatoWallClient.Logger.Information("Finished Downloading.");
         return true;
     }
 
-    private async Task<long> GetFileSizeAsync(Uri url)
+    private static async Task<long> GetFileSizeAsync(Uri url)
     {
         try
         {
@@ -1071,15 +1050,15 @@ public partial class PotatoWallUI : Window
         }
         catch (Exception ex)
         {
-            WriteToConsole(ex.Message, Brushes.Red, LogLevel.Error, ex);
+            PotatoWallClient.Logger.Error(ex, ex.Message);
 
             return 0;
         }
     }
 
-    public void GZDecompress(FileInfo fileToDecompress, string newFileName)
+    public static void GZDecompress(FileInfo fileToDecompress, string newFileName)
     {
-        WriteToConsole($"Decompressing {fileToDecompress}...", Brushes.Yellow);
+        PotatoWallClient.Logger.Warning("Decompressing {filetodecompress}...", fileToDecompress);
 
         using FileStream originalFileStream = fileToDecompress.OpenRead();
         string currentFileName = fileToDecompress.FullName;
@@ -1096,7 +1075,7 @@ public partial class PotatoWallUI : Window
         if (newFileName.Contains(@"data\asn.mmdb")) { PotatoWallClient.ASNMMDBReader = new(newFileName); }
         if (newFileName.Contains(@"data\city.mmdb")) { PotatoWallClient.CityMMDBReader = new(newFileName); }
 
-        WriteToConsole("Finished Decompressing.", Brushes.Yellow);
+        PotatoWallClient.Logger.Warning("Finished Decompressing.");
     }
 
     private void DownloadProgress(int ProgressPercentage)
@@ -1110,8 +1089,13 @@ public partial class PotatoWallUI : Window
         Button_DownloadDataBase.IsEnabled = false;
         new Thread(async () =>
         {
-            await DownloadFile(PotatoWallClient.ASNDBurl, PotatoWallClient.ASNDBSavePath, PotatoWallClient.ASNDBPath);
-            await DownloadFile(PotatoWallClient.CityDBurl, PotatoWallClient.CityDBSavePath, PotatoWallClient.CityDBPath);
+            try
+            {
+                await DownloadFile(PotatoWallClient.ASNDBurl, PotatoWallClient.ASNDBSavePath, PotatoWallClient.ASNDBPath);
+                await DownloadFile(PotatoWallClient.CityDBurl, PotatoWallClient.CityDBSavePath, PotatoWallClient.CityDBPath);
+            }
+            catch (Exception ex) { PotatoWallClient.Logger.Error(ex, "Error Downloading DataBase!!"); }
+
             Button_DownloadDataBase.Dispatcher.InvokeOrExecute(() => { Button_DownloadDataBase.IsEnabled = true; });
         })
         { IsBackground = true }.Start();
@@ -1133,4 +1117,23 @@ public partial class PotatoWallUI : Window
     }
 
     public static string GetMB(long bytes) => (bytes / 1024f / 1024f).ToString("0.##");
+
+    public static void StopWinDivert()
+    {
+        try
+        {
+            if (Process.GetProcessesByName("PotatoWall").Length < 2)
+            {
+                foreach (ServiceController sc in ServiceController.GetDevices())
+                {
+                    if (sc.ServiceName.Contains("WinDivert") || sc.ServiceName.Contains("WinDivert1.4"))
+                    {
+                        sc.Stop();
+                        PotatoWallClient.Logger.Warning("Stopped WinDivert service!!");
+                    }
+                }
+            }
+        }
+        catch (Exception ex) { PotatoWallClient.Logger.Error(ex, ex.Message); }
+    }
 }

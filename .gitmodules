@@ -1,3 +1,6 @@
 [submodule "Libs/WinDivertSharp"]
 	path = Libs/WinDivertSharp
 	url = https://github.com/poqdavid/WinDivertSharp.git
+[submodule "Setup"]
+	path = Setup
+	url = https://github.com/poqdavid/PotatoWallSetup.git
