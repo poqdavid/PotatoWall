@@ -93,6 +93,7 @@ public partial class PotatoWallUI : Window
 
         httpClient.DefaultRequestHeaders.UserAgent.Add(productInfo);
         httpClient.DefaultRequestHeaders.UserAgent.Add(moreInfo);
+        httpClient.Timeout = TimeSpan.FromSeconds(5);
 
         settingsViewModel = new SettingsViewModel();
         settingsViewModel.IColorData.Load();
@@ -170,9 +171,10 @@ public partial class PotatoWallUI : Window
         }
     }
 
-    protected string GetExtIP()
+    protected async Task<string> GetExtIPAsync()
     {
         string extip = "0.0.0.0";
+        Regex regex = new(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
 
         foreach (string hosturl in hosts)
         {
@@ -180,27 +182,48 @@ public partial class PotatoWallUI : Window
             {
                 PotatoWallClient.Logger.Warning("Checking public IP by {hosturl}...", hosturl);
 
-                string strdata = httpClient.GetStringAsync(hosturl).Result;
-                extip = new Regex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}").Matches(strdata)[0].ToString();
-                break;
+                HttpResponseMessage response = await httpClient.GetAsync(hosturl);
+
+                Thread.CurrentThread.Name = "PotatoWallUI-Enable";
+
+                PotatoWallClient.Logger.Warning("Response status code: {statuscode}", response.StatusCode);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    extip = regex.Match(await response.Content.ReadAsStringAsync()).ToString();
+
+                    if (extip != "0.0.0.0")
+                    {
+                        return extip;
+                    }
+                }
+
+                Thread.CurrentThread.Name = "PotatoWallUI-Enable";
             }
             catch (WebException webex)
             {
                 PotatoWallClient.Logger.Error(webex, "Error: URL: {hosturl}...", hosturl);
                 PotatoWallClient.Logger.Information("");
-                return extip;
+            }
+            catch (InvalidOperationException ioex)
+            {
+                PotatoWallClient.Logger.Error(ioex, "Error: URL: {hosturl}...", hosturl);
+                PotatoWallClient.Logger.Information("");
+            }
+            catch (TaskCanceledException tcex)
+            {
+                PotatoWallClient.Logger.Error(tcex, "Error: URL: {hosturl}...", hosturl);
+                PotatoWallClient.Logger.Information("");
             }
             catch (HttpRequestException httpex)
             {
                 PotatoWallClient.Logger.Error(httpex, "Error: URL: {hosturl}...", hosturl);
                 PotatoWallClient.Logger.Information("");
-                return extip;
             }
             catch (SocketException socketex)
             {
                 PotatoWallClient.Logger.Error(socketex, "Error: URL: {hosturl}...", hosturl);
                 PotatoWallClient.Logger.Information("");
-                return extip;
             }
             catch (AggregateException aex)
             {
@@ -209,7 +232,6 @@ public partial class PotatoWallUI : Window
                     PotatoWallClient.Logger.Error(exx, "Error: URL: {hosturl}...", hosturl);
                     PotatoWallClient.Logger.Information("");
                 }
-                return extip;
             }
         }
 
@@ -257,7 +279,7 @@ public partial class PotatoWallUI : Window
                 PotatoWallClient.Logger.Information("Local IP: {localip}", LocalIP);
                 PotatoWallClient.Logger.Information("");
 
-                ExternalIP = GetExtIP();
+                ExternalIP = GetExtIPAsync().Result;
 
                 PotatoWallClient.Logger.Information("Public IP: {externalip}", ExternalIP);
                 PotatoWallClient.Logger.Information("");

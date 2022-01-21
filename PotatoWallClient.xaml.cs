@@ -43,8 +43,6 @@ public partial class PotatoWallClient : Application
     ///<value>Plugin Settings.</value>
     public static Setting.Settings ISettings { get; set; } = new();
 
-    //private static bool appJustStarted = true;
-
     private static PotatoWallUI iPotatoWallUI;
 
     private static Logger logger;
@@ -66,7 +64,7 @@ public partial class PotatoWallClient : Application
     public void InitializeComponent()
     {
         logger.Information("Initializing resources for Client");
-        Uri resourceLocater = new("/PotatoWall;V1.5.0.0;component/PotatoWallclient.xaml", UriKind.Relative);
+        Uri resourceLocater = new("/PotatoWall;V1.5.1.0;component/PotatoWallclient.xaml", UriKind.Relative);
         LoadComponent(this, resourceLocater);
 
         if (Directory.Exists(AppDataPath))

@@ -10,15 +10,15 @@
     <RootNamespace>PotatoWall</RootNamespace>
     <ApplicationIcon>potatowall.ico</ApplicationIcon>
     <Description>By using WinDivert this application gives you the ability to allow/block connections.</Description>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
-    <FileVersion>1.5.0.0</FileVersion>
+    <AssemblyVersion>1.5.1.0</AssemblyVersion>
+    <FileVersion>1.5.1.0</FileVersion>
     <Copyright>Copyright © 2016-2022 POQDavid</Copyright>
     <PackageId>PotatoWall</PackageId>
     <Product>PotatoWall</Product>
     <Company>POQDavid</Company>
     <Authors>POQDavid</Authors>
     <PackageIcon>potatowall.png</PackageIcon>
-    <Version>1.5.0.0</Version>
+    <Version>1.5.1.0</Version>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
     <PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
