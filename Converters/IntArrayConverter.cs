@@ -19,21 +19,31 @@
 
 namespace PotatoWall.Converters;
 
-// <copyright file="DialogHostStackPanelWidthConverter.cs" company="POQDavid">
+// <copyright file="IntArrayConverter.cs" company="POQDavid">
 // Copyright (c) POQDavid. All rights reserved.
 // </copyright>
 // <author>POQDavid</author>
-// <summary>This is the DialogHostStackPanelWidthConverter class.</summary>
+// <summary>This is the IntArrayConverter class.</summary>
 
-public class DialogHostStackPanelWidthConverter : IValueConverter
+public class IntArrayConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-        return value.CastTo<double>() - double.Parse(parameter.CastTo<string>(), Thread.CurrentThread.CurrentCulture);
+        return (targetType.FullName, value.GetType().FullName) switch
+        {
+            ("System.String", "System.Int32[]") => value.CastTo<int[]>().ToCSV(),
+            ("System.String", "System.UInt32[]") => value.CastTo<uint[]>().ToCSV(),
+            _ => throw new NotImplementedException("Not implemented."),
+        };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-        throw new NotImplementedException("Not implemented.");
+        return (targetType.FullName, value.GetType().FullName) switch
+        {
+            ("System.Int32[]", "System.String") => value.CastTo<string>().CSVToArray(true).Select(x => int.Parse(x)).ToArray(),
+            ("System.UInt32[]", "System.String") => value.CastTo<string>().CSVToArray(true).Select(x => uint.Parse(x)).ToArray(),
+            _ => throw new NotImplementedException("Not implemented."),
+        };
     }
 }

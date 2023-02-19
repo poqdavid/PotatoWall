@@ -6,8 +6,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:localConverters="clr-namespace:PotatoWall.Converters"
+    xmlns:model="clr-namespace:PotatoWall.MVVM.Model"
     xmlns:viewmodel="clr-namespace:PotatoWall.MVVM.ViewModel"
-    xmlns:localutils="clr-namespace:PotatoWall.Utils"
     MinWidth="270"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
@@ -28,8 +28,6 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Font.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml" />
-
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <localConverters:DialogHostStackPanelWidthConverter x:Key="DialogHostStackPanelWidthConverter" />
             <localConverters:DialogHostStackPanelHeightConverter x:Key="DialogHostStackPanelHeightConverter" />
@@ -71,7 +69,7 @@
                     Path="IP"
                     UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>
-                        <localutils:IPRule />
+                        <model:IPRule />
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>

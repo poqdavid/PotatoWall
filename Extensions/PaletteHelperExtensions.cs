@@ -119,7 +119,7 @@ public static class PaletteHelperExtensions
     /// <param name="parentDictionary">The root dictionary to start searching at. Null means using Application.Current.Resources</param>
     private static void ReplaceEntry(object entryName, object newValue, ResourceDictionary parentDictionary = null)
     {
-        if (parentDictionary == null) { parentDictionary = Application.Current.Resources; }
+        parentDictionary ??= Application.Current.Resources;
 
         if (parentDictionary.Contains(entryName))
         {

@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace PotatoWall.Utils;
+namespace PotatoWall.MVVM.Model;
 
 // <copyright file="IPList.cs" company="POQDavid">
 // Copyright (c) POQDavid. All rights reserved.
@@ -82,7 +82,7 @@ public class SrcIPData : INotifyPropertyChanged
         DstIPData.Port = dstport;
     }
 
-    [JsonProperty("IP")]
+    [JsonPropertyName("IP")]
     public string IP
     {
         get => defaultIP;
@@ -95,7 +95,7 @@ public class SrcIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("Port")]
+    [JsonPropertyName("Port")]
     public string Port
     {
         get => defaultPort;
@@ -121,7 +121,7 @@ public class SrcIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("Direction")]
+    [JsonPropertyName("Direction")]
     public string Direction
     {
         get => defaultDirection;
@@ -135,18 +135,18 @@ public class SrcIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("IPPort")]
+    [JsonPropertyName("IPPort")]
     public string IPPort => $"{IP}:{Port}";
 
-    [JsonProperty("IPPorts")]
+    [JsonPropertyName("IPPorts")]
     public Dictionary<string, HashSet<string>> IPPorts
     { get => defaultIPPorts; set { defaultIPPorts = value; OnPropertyChanged(); } }
 
-    [JsonProperty("DstIPData")]
+    [JsonPropertyName("DstIPData")]
     public DstIPData DstIPData
     { get => defaultDstIPData; set { defaultDstIPData = value; OnPropertyChanged(); } }
 
-    [JsonProperty("ImageSource")]
+    [JsonPropertyName("ImageSource")]
     public Uri ImageSource
     {
         get
@@ -156,18 +156,18 @@ public class SrcIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("Country")]
+    [JsonPropertyName("Country")]
     public string Country => GetCountry();
 
-    [JsonProperty("ASN")]
+    [JsonPropertyName("ASN")]
     public string ASN => GetASN();
 
-    [JsonProperty("LastActivity")]
+    [JsonPropertyName("LastActivity")]
     public DateTime LastActivity { get; private set; } = DateTime.Now;
 
     public override bool Equals(object obj)
     {
-        return obj.GetType() == typeof(string) ? IP == ((string)obj) : obj is SrcIPData iPData && IP.Equals(iPData.IP, global::System.StringComparison.Ordinal);
+        return obj.GetType() == typeof(string) ? IP == obj.CastTo<string>() : obj is SrcIPData iPData && IP.Equals(iPData.IP, global::System.StringComparison.Ordinal);
     }
 
     public IPAddress ToIPAddress()
@@ -278,7 +278,7 @@ public class DstIPData : INotifyPropertyChanged
         Port = port;
     }
 
-    [JsonProperty("IP")]
+    [JsonPropertyName("IP")]
     public string IP
     {
         get => defaultIP;
@@ -290,7 +290,7 @@ public class DstIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("Port")]
+    [JsonPropertyName("Port")]
     public string Port
     {
         get => defaultPort;
@@ -316,14 +316,14 @@ public class DstIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("IPPort")]
+    [JsonPropertyName("IPPort")]
     public string IPPort => $"{IP}:{Port}";
 
-    [JsonProperty("IPPorts")]
+    [JsonPropertyName("IPPorts")]
     public Dictionary<string, HashSet<string>> IPPorts
     { get => defaultIPPorts; set { defaultIPPorts = value; OnPropertyChanged(); } }
 
-    [JsonProperty("ImageSource")]
+    [JsonPropertyName("ImageSource")]
     public Uri ImageSource
     {
         get
@@ -333,16 +333,16 @@ public class DstIPData : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("Country")]
+    [JsonPropertyName("Country")]
     public string Country => GetCountry();
 
-    [JsonProperty("ASN")]
+    [JsonPropertyName("ASN")]
     public string ASN => GetASN();
 
     public override bool Equals(object obj)
     {
         return obj.GetType() == typeof(string)
-            ? IP == ((string)obj)
+            ? IP == obj.CastTo<string>()
             : obj is SrcIPData iPData && IP.Equals(iPData.IP, StringComparison.Ordinal);
     }
 
@@ -432,155 +432,16 @@ public class DstIPData : INotifyPropertyChanged
     }
 }
 
-public class IPList<T> : ObservableCollection<SrcIPData>
+public class IPList<T> : ThreadSafeObservableCollection<SrcIPData>
 {
-    private delegate void SetItemCallback(int index, SrcIPData item);
-
-    private delegate void RemoveItemCallback(int index);
-
-    private delegate void ClearItemsCallback();
-
-    private delegate void InsertItemCallback(int index, SrcIPData item);
-
-    private delegate void MoveItemCallback(int oldIndex, int newIndex);
-
-    private static volatile bool ModifyIPList = true;
-
-    public Dispatcher Dispatcher { get; }
-
-    public IPList(Dispatcher dispatcher)
+    public IPList(Dispatcher dispatcher) : base(dispatcher)
     {
         Dispatcher = dispatcher;
     }
 
-    public IPList()
+    public IPList() : base()
     {
         Dispatcher = Dispatcher.CurrentDispatcher;
-    }
-
-    protected override void SetItem(int index, SrcIPData item)
-    {
-        try
-        {
-            ModifyIPList = false;
-            if (Dispatcher.CheckAccess())
-            {
-                base.SetItem(index, item);
-            }
-            else
-            {
-                _ = Dispatcher.Invoke(DispatcherPriority.Send, new SetItemCallback(SetItem), index, new object[] { item });
-            }
-        }
-        finally
-        {
-            ModifyIPList = true;
-        }
-    }
-
-    protected override void InsertItem(int index, SrcIPData item)
-    {
-        try
-        {
-            ModifyIPList = false;
-            if (Dispatcher == null)
-            {
-                base.InsertItem(index, item);
-            }
-            else if (Dispatcher.CheckAccess())
-            {
-                base.InsertItem(index, item);
-            }
-            else
-            {
-                _ = Dispatcher.Invoke(DispatcherPriority.Send, new InsertItemCallback(InsertItem), index, new object[] { item });
-            }
-        }
-        catch (Exception ex)
-        {
-            PotatoWallClient.Logger.Debug(ex, "InsertItem: ");
-        }
-        finally
-        {
-            ModifyIPList = true;
-        }
-    }
-
-    protected override void MoveItem(int oldIndex, int newIndex)
-    {
-        if (Dispatcher.CheckAccess())
-        {
-            base.MoveItem(oldIndex, newIndex);
-        }
-        else
-        {
-            _ = Dispatcher.Invoke(DispatcherPriority.Send, new MoveItemCallback(MoveItem), oldIndex, new object[] { newIndex });
-        }
-    }
-
-    protected override void RemoveItem(int index)
-    {
-        if (ModifyIPList)
-        {
-            if (Dispatcher.CheckAccess())
-            {
-                base.RemoveItem(index);
-            }
-            else
-            {
-                _ = Dispatcher.Invoke(DispatcherPriority.Send, new RemoveItemCallback(RemoveItem), index);
-            }
-        }
-    }
-
-    protected override void ClearItems()
-    {
-        if (ModifyIPList)
-        {
-            if (Dispatcher.CheckAccess())
-            {
-                base.ClearItems();
-            }
-            else
-            {
-                _ = Dispatcher.Invoke(DispatcherPriority.Send, new ClearItemsCallback(ClearItems));
-            }
-        }
-    }
-
-    public bool Contains(string ip)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            if (Items[i].Equals(ip))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public new bool Contains(SrcIPData iPData)
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            if (Items[i].Equals(iPData))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public bool AddContains(SrcIPData iPData)
-    {
-        if (!base.Contains(iPData))
-        {
-            Add(iPData);
-            return false;
-        }
-
-        return true;
     }
 
     public void AddOrUpdate(SrcIPData iPData)
@@ -605,5 +466,45 @@ public class IPList<T> : ObservableCollection<SrcIPData>
                 ModifyIPList = true;
             }
         }
+    }
+
+    public bool Contains(string ip)
+    {
+        for (int i = 0; i < Count; i++)
+        {
+            if (Items[i].Equals(ip))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+public class IPList<TKey, TValue> : ThreadSafeObservableDictionary<String, SrcIPData>
+{
+    public IPList() : base()
+    {
+        _dispatcher = Dispatcher.CurrentDispatcher;
+    }
+
+    public IPList(Dispatcher dispatcher) : base(dispatcher)
+    {
+        _dispatcher = dispatcher;
+    }
+
+    public bool Remove(SrcIPData iPData)
+    {
+        return base.Remove(iPData.IP);
+    }
+
+    public bool AddContains(SrcIPData iPData)
+    {
+        return AddContains(iPData.IP, iPData);
+    }
+
+    public void AddOrUpdate(SrcIPData iPData)
+    {
+        AddOrUpdate(iPData.IP, iPData);
     }
 }

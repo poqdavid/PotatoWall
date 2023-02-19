@@ -1,6 +1,6 @@
 /*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -40,10 +40,10 @@ public class Json
     {
         try
         {
-            _ = JToken.Parse(json_string);
+            _ = JsonNode.Parse(json_string);
             return true;
         }
-        catch (JsonReaderException)
+        catch (JsonException)
         {
             return false;
         }
@@ -54,24 +54,23 @@ public class Json
     /// </summary>
     internal static string Get_str(string json_string, string key)
     {
-        string temp = "";
         try
         {
             if (IsValid(json_string))
             {
-                JToken token = JObject.Parse(json_string);
-                token = token[key];
+                JsonNode jsonNode = JsonNode.Parse(json_string)!;
 
-                temp = token.ToString();
+                return jsonNode![key].ToJsonString();
             }
             else
             {
+                return string.Empty;
             }
         }
         catch (Exception)
         {
+            return string.Empty;
         }
-        return temp;
     }
 
     /// <summary>
@@ -79,33 +78,29 @@ public class Json
     /// </summary>
     internal static int Get_int(string json_string, string key)
     {
-        int temp = 0;
         try
         {
             if (IsValid(json_string))
             {
-                JToken token = JObject.Parse(json_string);
-                token = token[key];
+                JsonNode jsonNode = JsonNode.Parse(json_string)!;
 
-                temp = int.Parse(token.ToString(), Thread.CurrentThread.CurrentCulture);
+                return jsonNode![key].GetValue<int>();
             }
             else
             {
+                return 0;
             }
         }
         catch (Exception)
         {
+            return 0;
         }
-        return temp;
     }
 
     public static string GenerateString(object jsonobj)
     {
-        JsonSerializerSettings s = new()
-        {
-            ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
-        };
+        JsonSerializerOptions options = new() { WriteIndented = false };
 
-        return JsonConvert.SerializeObject(jsonobj, Formatting.None, s);
+        return JsonSerializer.Serialize(jsonobj, options);
     }
 }

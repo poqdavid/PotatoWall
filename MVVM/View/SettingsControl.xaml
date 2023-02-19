@@ -9,6 +9,7 @@
     xmlns:local="clr-namespace:PotatoWall"
     xmlns:localConverters="clr-namespace:PotatoWall.Converters"
     xmlns:viewmodel="clr-namespace:PotatoWall.MVVM.ViewModel"
+    xmlns:localValidationRules="clr-namespace:PotatoWall.ValidationRules"
     MinWidth="270"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
@@ -29,80 +30,84 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Font.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml" />
-
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <localConverters:DialogHostStackPanelWidthConverter x:Key="DialogHostStackPanelWidthConverter" />
             <localConverters:DialogHostStackPanelHeightConverter x:Key="DialogHostStackPanelHeightConverter" />
             <localConverters:MultiConverter x:Key="MultiConverter" />
+            <localConverters:IntArrayConverter x:Key="IntArrayConverter" />
+            <localValidationRules:CSVValidationRule x:Key="CSVValidationRule" />
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid
-        x:Name="Settings_MAIN"
+    <ScrollViewer
         MinWidth="270"
         MaxWidth="{Binding ActualWidth, Converter={StaticResource DialogHostStackPanelWidthConverter}, ConverterParameter=100.0, ElementName=window_client, Mode=OneWay}"
         MaxHeight="{Binding ActualHeight, Converter={StaticResource DialogHostStackPanelHeightConverter}, ConverterParameter=100.0, ElementName=window_client, Mode=OneWay}"
+        Margin="16"
+        VerticalScrollBarVisibility="Auto"  HorizontalScrollBarVisibility="Disabled">
+        <Grid
+        x:Name="Settings_MAIN"
+        MinWidth="270"
+        MaxWidth="{Binding ActualWidth, Converter={StaticResource DialogHostStackPanelWidthConverter}, ConverterParameter=100.0, ElementName=window_client, Mode=OneWay}"
         Margin="16">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="25" />
-
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="5" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <TextBlock Grid.Row="0" Grid.ColumnSpan="3"><Run Text="Settings" /></TextBlock>
-
-        <Grid
-            x:Name="Settings_LEFT"
-            Grid.Row="2"
-            Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="25" />
 
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="5" />
-                <RowDefinition Height="Auto" />
-
-                <RowDefinition Height="15" />
-
-                <RowDefinition Height="Auto" />
-
-                <RowDefinition Height="15" />
-
-                <RowDefinition Height="Auto" />
-
-                <RowDefinition Height="15" />
 
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <GroupBox
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" ><Run Text="Settings" /></TextBlock>
+
+            <Grid
+            x:Name="Settings_LEFT"
+            Grid.Row="2"
+            Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <GroupBox
                 Grid.Row="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
-                <GroupBox.Header>
-                    UI options.
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
+                    <GroupBox.Header>
+                        UI options.
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
                         Grid.Row="0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="Theme Color: " /></TextBlock>
-                    <ComboBox
+                        <ComboBox
                         x:Name="theme_p"
                         Grid.Row="2"
                         Width="Auto"
@@ -113,223 +118,366 @@
                         ItemsSource="{Binding IColorData.ColorDataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         SelectedIndex="{Binding ISettings.GUI.XTheme.Color, BindsDirectlyToSource=True, IsAsync=False, Mode=TwoWay, NotifyOnTargetUpdated=False, NotifyOnValidationError=False, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}"
                         SelectedValuePath="ColorName">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding SelectionChangedCommand}">
-                                    <i:InvokeCommandAction.CommandParameter>
-                                        <MultiBinding Converter="{StaticResource MultiConverter}">
-                                            <Binding ElementName="theme_p" Path="SelectedItem" />
-                                            <Binding ElementName="theme_p" Path="SelectedIndex" />
-                                        </MultiBinding>
-                                    </i:InvokeCommandAction.CommandParameter>
-                                </i:InvokeCommandAction>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                        <ComboBox.ItemContainerStyle>
-                            <Style BasedOn="{StaticResource MaterialDesignComboBoxItemStyle}" TargetType="{x:Type ComboBoxItem}">
-                                <Setter Property="Tag" Value="{Binding ColorMetadata}" />
-                                <Setter Property="IsEnabled" Value="{Binding ColorEnabled}" />
-                                <Setter Property="IsHitTestVisible" Value="{Binding ColorEnabled}" />
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
-                    </ComboBox>
-                </Grid>
-            </GroupBox>
-            <GroupBox Grid.Row="2">
-                <GroupBox.Header>
-                    FriesWall options.
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="15" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="15" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectionChangedCommand}">
+                                        <i:InvokeCommandAction.CommandParameter>
+                                            <MultiBinding Converter="{StaticResource MultiConverter}">
+                                                <Binding ElementName="theme_p" Path="SelectedItem" />
+                                                <Binding ElementName="theme_p" Path="SelectedIndex" />
+                                            </MultiBinding>
+                                        </i:InvokeCommandAction.CommandParameter>
+                                    </i:InvokeCommandAction>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            <ComboBox.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource MaterialDesignComboBoxItemStyle}" TargetType="{x:Type ComboBoxItem}">
+                                    <Setter Property="Tag" Value="{Binding ColorMetadata}" />
+                                    <Setter Property="IsEnabled" Value="{Binding ColorEnabled}" />
+                                    <Setter Property="IsHitTestVisible" Value="{Binding ColorEnabled}" />
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                    </Grid>
+                </GroupBox>
+                <GroupBox
+                Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                    <GroupBox.Header>
+                        GeoIP options.
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
                         Grid.Row="0"
                         HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"><Run Text="White list / Auto RegEX: " /></TextBlock>
-                    <CheckBox
+                        VerticalAlignment="Center"><Run Text="GeoIP database provider: " /></TextBlock>
+                        <ComboBox
+                        x:Name="geoipdbprov"
                         Grid.Row="2"
-                        HorizontalContentAlignment="Left"
-                        Content="Enable"
-                        IsChecked="{Binding ISettings.EnableRegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox
-                        x:Name="TextBox_RegEX"
+                        Width="Auto"
+                        Height="Auto"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        ItemsSource="{Binding ISettings.GeoIP.GeoIPDBProviders, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedValue="{Binding ISettings.GeoIP.GeoIPDBProvider, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}">
+                        </ComboBox>
+                        <TextBlock
                         Grid.Row="4"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"><Run Text="License Key: " /></TextBlock>
+
+                        <TextBox
+                        x:Name="TextBox_GeoIPLicenseKEY"
+                        Grid.Row="6"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
-                        Text="{Binding ISettings.RegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding ISettings.GeoIP.LicenseKEY, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Grid.Row="4">
+                    <GroupBox.Header>
+                        FriesWall options.
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <TextBlock
-                        Grid.Row="6"
+                        <Grid
+                        Grid.Row="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                        Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"  ><Run Text="White list / Auto RegEX: " />
+                            </TextBlock>
+                            <CheckBox
+                            Grid.Column="1"
+                        HorizontalContentAlignment="Center"
+                        Content="Enable"
+                        IsChecked="{Binding ISettings.Firewall.EnableRegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <TextBox
+                        x:Name="TextBox_RegEX"
+                        Grid.Row="2"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        Text="{Binding ISettings.Firewall.RegEX, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock
+                        Grid.Row="4"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="IP Activity Time: " /></TextBlock>
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_IPActivityTime"
-                        Grid.Row="8"
+                        Grid.Row="6"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
-                        Text="{Binding ISettings.IPActivityTime, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{Binding ISettings.Firewall.IPActivityTime, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock
-                        Grid.Row="10"
+                        <TextBlock
+                        Grid.Row="8"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="IP Search Duration: " /></TextBlock>
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_IPSearchDuration"
-                        Grid.Row="12"
+                        Grid.Row="10"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
-                        Text="{Binding ISettings.IPSearchDuration, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-            </GroupBox>
-        </Grid>
-        <Grid
+                        Text="{Binding ISettings.Firewall.IPSearchDuration, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                        <Grid
+                        Grid.Row="12"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                        Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"><Run Text="Packet Size : " /></TextBlock>
+                            <CheckBox
+                        Grid.Column="1"
+                        HorizontalContentAlignment="Left"
+                        Content="Enable"
+                        IsChecked="{Binding ISettings.Firewall.EnablePacketSize, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <TextBlock
+                        Grid.Row="14"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"><Run Text="Heartbeat Sizes: " /></TextBlock>
+                        <TextBox
+                        x:Name="TextBox_HeartbeatSizes"
+                        Grid.Row="16"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        ToolTip="Heartbeat Sizes."
+                        AutomationProperties.HelpText="Heartbeat Sizes.">
+                            <TextBox.Text>
+                                <Binding Path="ISettings.Firewall.HeartbeatSizes" UpdateSourceTrigger="PropertyChanged" Converter="{StaticResource IntArrayConverter}" ValidatesOnNotifyDataErrors="True" ValidatesOnDataErrors="True" NotifyOnValidationError="True" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}" BindsDirectlyToSource="True" Mode="TwoWay" NotifyOnSourceUpdated="True">
+                                    <Binding.ValidationRules>
+                                        <localValidationRules:CSVValidationRule TypeName="UInt" ValidatesOnTargetUpdated="True" />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+
+                        <TextBlock
+                        Grid.Row="18"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"><Run Text="Matchmaking Sizes: " /></TextBlock>
+                        <TextBox
+                        x:Name="TextBox_MatchmakingSizes"
+                        Grid.Row="20"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        ToolTip="Matchmaking Sizes."
+                        AutomationProperties.HelpText="Matchmaking Sizes.">
+                            <TextBox.Text>
+                                <Binding Path="ISettings.Firewall.MatchmakingSizes" UpdateSourceTrigger="PropertyChanged" Converter="{StaticResource IntArrayConverter}" ValidatesOnNotifyDataErrors="True" ValidatesOnDataErrors="True" NotifyOnValidationError="True" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}" BindsDirectlyToSource="True" Mode="TwoWay" NotifyOnSourceUpdated="True">
+                                    <Binding.ValidationRules>
+                                        <localValidationRules:CSVValidationRule TypeName="UInt" ValidatesOnTargetUpdated="True" />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <TextBlock
+                        Grid.Row="22"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"><Run Text="Max Packets MMS: " /></TextBlock>
+                        <TextBox
+                        x:Name="TextBox_MaxPacketsMMS"
+                        Grid.Row="24"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        ToolTip="The maximum number of packets for a matchmaking request."
+                        AutomationProperties.HelpText="The maximum number of packets for a matchmaking request."
+                        Text="{Binding ISettings.Firewall.MaxPacketsMMS, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+            <Grid
             x:Name="Settings_RIGHT"
             Grid.Row="2"
             Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="25" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
 
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="5" />
-                <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="15" />
+                    <RowDefinition Height="Auto" />
 
-                <RowDefinition Height="15" />
+                    <RowDefinition Height="15" />
 
-                <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
 
-                <RowDefinition Height="15" />
+                    <RowDefinition Height="15" />
 
-                <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
 
-                <RowDefinition Height="15" />
+                    <RowDefinition Height="15" />
 
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <GroupBox Grid.Row="0">
-                <GroupBox.Header>
-                    WinDivert options.
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <GroupBox Grid.Row="0">
+                    <GroupBox.Header>
+                        WinDivert options.
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
 
-                        <RowDefinition Height="15" />
+                            <RowDefinition Height="15" />
 
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
 
-                        <RowDefinition Height="15" />
+                            <RowDefinition Height="15" />
 
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
 
-                        <RowDefinition Height="15" />
+                            <RowDefinition Height="15" />
 
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="5" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
                         Grid.Row="0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="WinDivert Filter: " /></TextBlock>
 
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_WinDFilter"
                         Grid.Row="2"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Text="{Binding ISettings.WinDivert.Filter, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock
+                        <TextBlock
                         Grid.Row="4"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="WinDivert QueueLen: " /></TextBlock>
 
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_WinDQueueLen"
                         Grid.Row="6"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Text="{Binding ISettings.WinDivert.QueueLen, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock
+                        <TextBlock
                         Grid.Row="8"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="WinDivert QueueTime: " /></TextBlock>
 
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_WinDQueueTime"
                         Grid.Row="10"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Text="{Binding ISettings.WinDivert.QueueTime, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock
+                        <TextBlock
                         Grid.Row="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"><Run Text="WinDivert QueueSize: " /></TextBlock>
 
-                    <TextBox
+                        <TextBox
                         x:Name="TextBox_WinDQueueSize"
                         Grid.Row="14"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         Text="{Binding ISettings.WinDivert.QueueSize, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-            </GroupBox>
+                    </Grid>
+                </GroupBox>
 
-            <GroupBox Grid.Row="2">
-                <GroupBox.Header>
-                    WinDivert function.
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="10" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <RadioButton
+                <GroupBox Grid.Row="2">
+                    <GroupBox.Header>
+                        WinDivert function.
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <RadioButton
                         Grid.Row="0"
                         Content="WinDivertRecvEx"
                         IsChecked="{Binding ISettings.WinDivert.WinDivertRecvEx, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
-                    <RadioButton
+                        <RadioButton
                         Grid.Row="2"
                         Content="WinDivertRecv"
                         IsChecked="{Binding ISettings.WinDivert.WinDivertRecv, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-            </GroupBox>
-        </Grid>
+                    </Grid>
+                </GroupBox>
+            </Grid>
 
-        <StackPanel
-            Grid.Row="4"
+            <StackPanel
+            Grid.Row="0"
             Grid.ColumnSpan="3"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
-            <Button
+                <Button
+                                                    HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Center"
                 x:Name="Settings_Button_CLOSE"
                 d:Click="DialogHost_Button_CLOSE_Click"
                 Command="materialDesign:DialogHost.CloseDialogCommand"
                 Content="CLOSE"
                 IsDefault="True" />
-        </StackPanel>
-    </Grid>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

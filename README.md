@@ -24,5 +24,9 @@ By using WinDivert this application gives you the ability to allow/block connect
 <br/>**ETH:** 0x7218779242a8425879B09969431c20F5eC1a192D
 
 ----------
-The free IP to City Lite database by [DB-IP](https://db-ip.com/) is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+The free IP to City Lite database by [DB-IP](https://db-ip.com/) is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).</br>
 The free IP to ASN Lite database by [DB-IP](https://db-ip.com/) is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+
+This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.
+
+Giving credit to [Speyedr](https://gitlab.com/Speyedr) for the packet filtering in [guardian-fastload-fix](https://gitlab.com/Speyedr/guardian-fastload-fix)

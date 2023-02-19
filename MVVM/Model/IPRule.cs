@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -17,14 +17,15 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace PotatoWall.Utils;
+namespace PotatoWall.MVVM.Model;
 
-public class IPRule : ValidationRule
+public partial class IPRule : ValidationRule
 {
-    private readonly Regex RegEX = new(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
+    [GeneratedRegex("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")]
+    private static partial Regex RegEX();
 
-    public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
+    public override ValidationResult Validate(object value, CultureInfo cultureInfo)
     {
-        return RegEX.IsMatch((string)value) ? new ValidationResult(true, null) : new ValidationResult(false, "Invalid IP Address");
+        return RegEX().IsMatch(value.CastTo<string>()) ? new ValidationResult(true, null) : new ValidationResult(false, "Invalid IP Address");
     }
 }

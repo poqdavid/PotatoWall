@@ -1,6 +1,6 @@
 /*
  *      This file is part of SAPPRemote distribution (https://github.com/poqdavid/SAPPRemote or http://poqdavid.github.io/SAPPRemote/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      SAPPRemote is free software: you can redistribute it and/or modify
@@ -26,67 +26,19 @@ namespace PotatoWall.Setting;
 // <summary>This is the settings class.</summary>
 public class Settings : INotifyPropertyChanged
 {
-    private string defaultRegEX = @"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$";
-
-    private bool defaultEnableRegEX = false;
-
-    private int defaultIPActivityTime = 35;
-
-    private int defaultIPSearchDuration = 10;
-
     public event PropertyChangedEventHandler PropertyChanged;
 
-    [JsonProperty("RegEX")]
-    [DefaultValue(@"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$")]
-    public string RegEX
-    {
-        get => defaultRegEX;
-        set
-        {
-            defaultRegEX = value;
-            OnPropertyChanged();
-        }
-    }
-
-    [JsonProperty("EnableRegEX")]
-    [DefaultValue(true)]
-    public bool EnableRegEX
-    {
-        get => defaultEnableRegEX;
-        set
-        {
-            defaultEnableRegEX = value;
-            OnPropertyChanged();
-        }
-    }
-
-    [JsonProperty("IPActivityTime")]
-    [DefaultValue(35)]
-    public int IPActivityTime
-    {
-        get => defaultIPActivityTime;
-        set
-        {
-            defaultIPActivityTime = value;
-            OnPropertyChanged();
-        }
-    }
-
-    [JsonProperty("IPSearchDuration")]
-    [DefaultValue(10)]
-    public int IPSearchDuration
-    {
-        get => defaultIPSearchDuration;
-        set
-        {
-            defaultIPSearchDuration = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [JsonPropertyName("GUI")]
     public GUI GUI { get; set; } = new(new XTheme(5));
 
+    [JsonPropertyName("GeoIP")]
+    public GeoIP GeoIP { get; set; } = new();
+
+    [JsonPropertyName("WinDivert")]
     public WinDivert WinDivert { get; set; } = new();
+
+    [JsonPropertyName("Firewall")]
+    public Firewall Firewall { get; set; } = new();
 
     /// <summary>
     /// Saves the App settings in selected path.
@@ -98,12 +50,9 @@ public class Settings : INotifyPropertyChanged
             _ = Directory.CreateDirectory(PotatoWallClient.AppDataPath);
         }
 
-        JsonSerializerSettings s = new()
-        {
-            ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
-        };
+        JsonSerializerOptions options = new() { WriteIndented = true };
 
-        File.WriteAllText(PotatoWallClient.SettingPath, JsonConvert.SerializeObject(PotatoWallUI.ISettings, Formatting.Indented, s));
+        File.WriteAllText(PotatoWallClient.SettingPath, JsonSerializer.Serialize(PotatoWallUI.ISettings, options));
     }
 
     /// <summary>
@@ -116,13 +65,12 @@ public class Settings : INotifyPropertyChanged
             string json_string = File.ReadAllText(PotatoWallClient.SettingPath);
             if (Json.IsValid(json_string))
             {
-                JsonSerializerSettings s = new()
+                JsonSerializerOptions options = new()
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
+                    WriteIndented = true
                 };
 
-                PotatoWallUI.ISettings = JsonConvert.DeserializeObject<Settings>(json_string, s);
+                PotatoWallUI.ISettings = JsonSerializer.Deserialize<Settings>(json_string, options);
             }
             else
             {
@@ -130,8 +78,9 @@ public class Settings : INotifyPropertyChanged
                 LoadSettings();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            PotatoWallClient.Logger.Error("Error loading settings", ex);
             SaveSetting();
             LoadSettings();
         }
@@ -150,6 +99,11 @@ public class XTheme : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
+    public XTheme()
+    {
+        Color = defaultColor;
+    }
+
     public XTheme(int color)
     {
         Color = color;
@@ -157,7 +111,7 @@ public class XTheme : INotifyPropertyChanged
 
     private int defaultColor = 5;
 
-    [JsonProperty("Color")]
+    [JsonPropertyName("Color")]
     public int Color
     { get => defaultColor; set { defaultColor = value; OnPropertyChanged(); } }
 
@@ -172,13 +126,70 @@ public class XTheme : INotifyPropertyChanged
 
 public class GUI
 {
+    public GUI()
+    {
+        XTheme = new XTheme(5);
+    }
+
     public GUI(XTheme theme)
     {
         XTheme = theme;
     }
 
-    [JsonProperty("Theme")]
+    [JsonPropertyName("Theme")]
     public XTheme XTheme { get; set; } = new(5);
+}
+
+public class GeoIP
+{
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    [JsonIgnore]
+    public List<string> GeoIPDBProviders { get; set; } = new() { "DBIP", "MaxMind" };
+
+    private string defaultGeoIPDBProvider = "DBIP";
+    private string defaultLicenseKEY = "";
+
+    public GeoIP()
+    {
+        GeoIPDBProvider = defaultGeoIPDBProvider;
+        LicenseKEY = defaultLicenseKEY;
+    }
+
+    public GeoIP(string geoipdbprovider, string licensekey)
+    {
+        GeoIPDBProvider = geoipdbprovider;
+        LicenseKEY = licensekey;
+    }
+
+    [JsonPropertyName("GeoIPDBProvider")]
+    [DefaultValue("DBIP")]
+    public string GeoIPDBProvider
+    {
+        get => defaultGeoIPDBProvider;
+        set
+        {
+            defaultGeoIPDBProvider = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("LicenseKEY")]
+    [DefaultValue("")]
+    public string LicenseKEY
+    {
+        get => defaultLicenseKEY;
+        set
+        {
+            defaultLicenseKEY = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
 
 public class WinDivert : INotifyPropertyChanged
@@ -229,7 +240,7 @@ public class WinDivert : INotifyPropertyChanged
     /// Gets or sets the WinDivertFilter property.
     ///</summary>
     ///<value>Filter string.</value>
-    [JsonProperty("Filter")]
+    [JsonPropertyName("Filter")]
     [DefaultValue("(udp.SrcPort == 6672 or udp.DstPort == 6672) and ip")]
     public string Filter
     {
@@ -240,7 +251,7 @@ public class WinDivert : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("WinDivertRecvEx")]
+    [JsonPropertyName("WinDivertRecvEx")]
     [DefaultValue(true)]
     public bool WinDivertRecvEx
     {
@@ -251,7 +262,7 @@ public class WinDivert : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("WinDivertRecv")]
+    [JsonPropertyName("WinDivertRecv")]
     [DefaultValue(false)]
     public bool WinDivertRecv
     {
@@ -262,7 +273,7 @@ public class WinDivert : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("QueueLen")]
+    [JsonPropertyName("QueueLen")]
     [DefaultValue(16384)]
     public ulong QueueLen
     {
@@ -273,7 +284,7 @@ public class WinDivert : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("QueueTime")]
+    [JsonPropertyName("QueueTime")]
     [DefaultValue(8000)]
     public ulong QueueTime
     {
@@ -284,7 +295,7 @@ public class WinDivert : INotifyPropertyChanged
         }
     }
 
-    [JsonProperty("QueueSize")]
+    [JsonPropertyName("QueueSize")]
     [DefaultValue(33554432)]
     public ulong QueueSize
     {
@@ -292,6 +303,154 @@ public class WinDivert : INotifyPropertyChanged
         set
         {
             defaultQueueSize = value; OnPropertyChanged();
+        }
+    }
+
+    // This method is called by the Set accessor of each property.
+    // The CallerMemberName attribute that is applied to the optional propertyName
+    // parameter causes the property name of the caller to be substituted as an argument.
+    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public class Firewall : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    private string defaultRegEX = @"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$";
+
+    private bool defaultEnableRegEX = false;
+
+    private bool defaultEnablePacketSize = false;
+
+    private int defaultIPActivityTime = 35;
+
+    private int defaultIPSearchDuration = 10;
+
+    private uint[] defaultHeartbeatSizes = new uint[] { 12, 18, 63 };
+
+    private uint[] defaultMatchmakingSizes = new uint[] { 191, 207, 223, 239 };
+
+    private int defaultMaxPacketsMMS = 20;
+
+    public Firewall()
+    {
+        RegEX = defaultRegEX;
+        EnableRegEX = defaultEnableRegEX;
+        IPActivityTime = defaultIPActivityTime;
+        IPSearchDuration = defaultIPSearchDuration;
+        EnablePacketSize = defaultEnablePacketSize;
+        HeartbeatSizes = defaultHeartbeatSizes;
+        MatchmakingSizes = defaultMatchmakingSizes;
+    }
+
+    public Firewall(string regEX, bool enableRegEX, int iPActivityTime, int iPSearchDuration, bool enablePacketSize, uint[] heartbeatSizes, uint[] matchmakingSizes, int maxPacketsMMS)
+    {
+        RegEX = regEX;
+        EnableRegEX = enableRegEX;
+        IPActivityTime = iPActivityTime;
+        IPSearchDuration = iPSearchDuration;
+        EnablePacketSize = enablePacketSize;
+        HeartbeatSizes = heartbeatSizes;
+        MatchmakingSizes = matchmakingSizes;
+        MaxPacketsMMS = maxPacketsMMS;
+    }
+
+    [JsonPropertyName("RegEX")]
+    [DefaultValue(@"^(185\.56\.6[4-7]\.\d{1,3})$|^(104\.255\.10[4-7]\.\d{1,3})$|^(192\.81\.24[0-7]\.\d{1,3})$")]
+    public string RegEX
+    {
+        get => defaultRegEX;
+        set
+        {
+            defaultRegEX = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("EnableRegEX")]
+    [DefaultValue(true)]
+    public bool EnableRegEX
+    {
+        get => defaultEnableRegEX;
+        set
+        {
+            defaultEnableRegEX = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("IPActivityTime")]
+    [DefaultValue(35)]
+    public int IPActivityTime
+    {
+        get => defaultIPActivityTime;
+        set
+        {
+            defaultIPActivityTime = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("IPSearchDuration")]
+    [DefaultValue(10)]
+    public int IPSearchDuration
+    {
+        get => defaultIPSearchDuration;
+        set
+        {
+            defaultIPSearchDuration = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("EnablePacketSize")]
+    [DefaultValue(true)]
+    public bool EnablePacketSize
+    {
+        get => defaultEnablePacketSize;
+        set
+        {
+            defaultEnablePacketSize = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("HeartbeatSizes")]
+    [DefaultValue(new uint[] { 12, 18, 63 })]
+    public uint[] HeartbeatSizes
+    {
+        get => defaultHeartbeatSizes;
+        set
+        {
+            defaultHeartbeatSizes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("MatchmakingSizes")]
+    [DefaultValue(new uint[] { 191, 207, 223, 239 })]
+    public uint[] MatchmakingSizes
+    {
+        get => defaultMatchmakingSizes;
+        set
+        {
+            defaultMatchmakingSizes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("MaxPacketsMMS")]
+    [DefaultValue(20)]
+    public int MaxPacketsMMS
+    {
+        get => defaultMaxPacketsMMS;
+        set
+        {
+            defaultMaxPacketsMMS = value;
+            OnPropertyChanged();
         }
     }
 

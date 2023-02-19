@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -16,6 +16,8 @@
  *      You should have received a copy of the GNU General Public License
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+using PotatoWall.MVVM.Model;
 
 namespace PotatoWall.Utils;
 
@@ -78,6 +80,6 @@ internal class TextBlockWriter : TextWriter
 
     public override Encoding Encoding
     {
-        get { return System.Text.Encoding.UTF8; }
+        get { return Encoding.UTF8; }
     }
 }

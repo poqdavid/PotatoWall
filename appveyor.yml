@@ -1,4 +1,4 @@
-version: 1.3.0_{build}
+version: 1.6.0_{build}
 configuration: Release
 platform: x64
 install:

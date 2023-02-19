@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ public class DialogHostStackPanelHeightConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-        return (double)value - double.Parse((string)parameter, Thread.CurrentThread.CurrentCulture);
+        return value.CastTo<double>() - double.Parse(parameter.CastTo<string>(), Thread.CurrentThread.CurrentCulture);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

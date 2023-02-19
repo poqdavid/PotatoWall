@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -17,6 +17,7 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using PotatoWall.MVVM.Model;
 using System.Windows.Input;
 
 namespace PotatoWall.MVVM.ViewModel
@@ -37,9 +38,9 @@ namespace PotatoWall.MVVM.ViewModel
                 ComboBoxSelectionChangedEventArgs e = new();
                 EventHandler<ComboBoxSelectionChangedEventArgs> raiseEvent = SelectionChangedEvent;
 
-                object[] values = (object[])objects;
-                e.SelectedItem = (ColorDataList)values[0];
-                e.SelectedIndex = (int)values[1];
+                object[] values = objects.CastTo<object[]>();
+                e.SelectedItem = values[0].CastTo<ColorDataList>();
+                e.SelectedIndex = values[1].CastTo<int>();
 
                 raiseEvent?.Invoke(this, e);
             });

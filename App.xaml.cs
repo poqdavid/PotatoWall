@@ -17,30 +17,28 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace PotatoWall.Extensions;
+namespace PotatoWall;
 
-// <copyright file="WindowExtensions.cs" company="POQDavid">
-// Copyright (c) POQDavid. All rights reserved.
-// </copyright>
-// <author>POQDavid</author>
-// <summary>This is the WindowExtensions class.</summary>
+using System.Windows;
 
-public static class WindowExtensions
+/// <copyright file="App.xaml.cs" company="POQDavid">
+/// Copyright (c) POQDavid. All rights reserved.
+/// </copyright>
+/// <author>POQDavid</author>
+/// <summary>This is the App class.</summary>
+public partial class App : Application
 {
-    public static void SetTitle(this Window winx, string text, bool waitUntilReturn = false)
+    protected override void OnStartup(StartupEventArgs e)
     {
-        Action settitle = () => winx.Title = "SAPP Remote" + text;
-        if (winx.CheckAccess())
-        {
-            settitle();
-        }
-        else if (waitUntilReturn)
-        {
-            winx.Dispatcher.Invoke(settitle);
-        }
-        else
-        {
-            _ = winx.Dispatcher.BeginInvoke(settitle);
-        }
+        PotatoWallClient.InitializeComponent();
+
+        base.OnStartup(e);
+
+        PotatoWallClient.Run();
+    }
+
+    private void Application_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
+    {
+        PotatoWallClient.Logger.Information("I see loaded!!!");
     }
 }

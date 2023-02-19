@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@ public static class RichTextBoxExtensions
 {
     public static void CheckAppendText(this RichTextBox richtextBox, Paragraph msg, bool waitUntilReturn = false)
     {
-        //Action append = () =>
         Action append = () =>
         {
             richtextBox.Document.CheckAppendText(msg);
@@ -51,7 +50,6 @@ public static class RichTextBoxExtensions
 
     public static void SetText(this RichTextBox richtextBox, Paragraph msg, bool waitUntilReturn = false)
     {
-        //Action append = () =>
         Action append = () =>
         {
             richtextBox.Document.SetText(msg);

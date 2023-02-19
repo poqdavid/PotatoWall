@@ -1,6 +1,6 @@
 /*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@ namespace PotatoWall.Extensions;
 // <author>POQDavid</author>
 // <summary>This is the FrameworkElementExtensions class.</summary>
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0004:Cast is redundant", Justification = "The cast is needed")]
 public static class FrameworkElementExtensions
 {
     public static T GetTemplatedParent<T>(this FrameworkElement o) where T : DependencyObject

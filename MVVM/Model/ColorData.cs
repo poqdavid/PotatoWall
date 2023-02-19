@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace PotatoWall.Utils;
+namespace PotatoWall.MVVM.Model;
 
 // <copyright file="ColorData.cs" company="POQDavid">
 // Copyright (c) POQDavid. All rights reserved.
@@ -26,6 +26,13 @@ namespace PotatoWall.Utils;
 // <summary>This is the ColorData class.</summary>
 public class ColorDataList
 {
+    public ColorDataList()
+    {
+        ColorName = string.Empty;
+        ColorMetadata = string.Empty;
+        ColorEnabled = true;
+    }
+
     public ColorDataList(string colorname, string colormetadata, bool colorenabled)
     {
         ColorName = colorname;
@@ -33,13 +40,13 @@ public class ColorDataList
         ColorEnabled = colorenabled;
     }
 
-    [JsonProperty("ColorName")]
-    public string ColorName { get; set; } = "";
+    [JsonPropertyName("ColorName")]
+    public string ColorName { get; set; } = string.Empty;
 
-    [JsonProperty("ColorMetadata")]
-    public string ColorMetadata { get; set; } = "";
+    [JsonPropertyName("ColorMetadata")]
+    public string ColorMetadata { get; set; } = string.Empty;
 
-    [JsonProperty("ColorEnabled")]
+    [JsonPropertyName("ColorEnabled")]
     public bool ColorEnabled { get; set; } = true;
 }
 
@@ -49,7 +56,7 @@ public class ColorData : INotifyPropertyChanged
 
     private List<ColorDataList> defaultColorDataList = new() { };
 
-    [JsonProperty("ColorDataList")]
+    [JsonPropertyName("ColorDataList")]
     public List<ColorDataList> ColorDataList
     { get => defaultColorDataList; set { defaultColorDataList = value; OnPropertyChanged(); } }
 
@@ -63,9 +70,9 @@ public class ColorData : INotifyPropertyChanged
             _ = Directory.CreateDirectory(PotatoWallClient.AppDataPath);
         }
 
-        JsonSerializerSettings s = new()
+        JsonSerializerOptions options = new()
         {
-            ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
+            WriteIndented = true
         };
 
         SwatchesProvider swatchesProvider = new();
@@ -83,12 +90,12 @@ public class ColorData : INotifyPropertyChanged
         cd.ColorDataList.Add(new ColorDataList("------------Others------------", "SEP", false));
         foreach (PropertyInfo c in typeof(Colors).GetProperties())
         {
-            Color cx = (Color)c.GetValue(null);
+            Color cx = c.GetValue(null).CastTo<Color>();
             cd.ColorDataList.Add(new ColorDataList(c.Name, cx.ToString(Thread.CurrentThread.CurrentCulture), true));
         }
         cd.ColorDataList.Add(new ColorDataList("------------Others------------", "SEP", false));
 
-        File.WriteAllText(PotatoWallClient.ColorDataPath, JsonConvert.SerializeObject(cd, Formatting.Indented, s));
+        File.WriteAllText(PotatoWallClient.ColorDataPath, JsonSerializer.Serialize(cd, options));
     }
 
     public void Load()
@@ -98,13 +105,12 @@ public class ColorData : INotifyPropertyChanged
             string json_string = File.ReadAllText(PotatoWallClient.ColorDataPath);
             if (Json.IsValid(json_string))
             {
-                JsonSerializerSettings s = new()
+                JsonSerializerOptions options = new()
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    ObjectCreationHandling = ObjectCreationHandling.Replace // without this, you end up with duplicates.
+                    WriteIndented = true
                 };
 
-                ColorDataList = JsonConvert.DeserializeObject<ColorData>(json_string, s).ColorDataList;
+                ColorDataList = JsonSerializer.Deserialize<ColorData>(json_string, options).ColorDataList;
             }
             else
             {

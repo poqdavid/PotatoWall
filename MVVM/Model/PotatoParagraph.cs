@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of PotatoWall distribution (https://github.com/poqdavid/PotatoWall or http://poqdavid.github.io/PotatoWall/).
- *  	Copyright (c) 2021 POQDavid
+ *  	Copyright (c) 2023 POQDavid
  *      Copyright (c) contributors
  *
  *      PotatoWall is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace PotatoWall.Utils;
+namespace PotatoWall.MVVM.Model;
 
 // <copyright file="PotatoParagraph.cs" company="POQDavid">
 // Copyright (c) POQDavid. All rights reserved.
@@ -26,23 +26,33 @@ namespace PotatoWall.Utils;
 // <summary>This is the PotatoParagraph class.</summary>
 public class PotatoParagraph
 {
-    [JsonProperty("Text")]
-    public string Text { get; set; } = "";
+    [JsonPropertyName("Text")]
+    public string Text { get; set; } = string.Empty;
 
-    [JsonProperty("Background")]
+    [JsonPropertyName("Background")]
     public Brush Background { get; set; } = null;
 
-    [JsonProperty("Foreground")]
+    [JsonPropertyName("Foreground")]
     public Brush Foreground { get; set; } = null;
 
-    [JsonProperty("Bold")]
+    [JsonPropertyName("Bold")]
     public bool Bold { get; set; } = false;
 
-    [JsonProperty("Italic")]
+    [JsonPropertyName("Italic")]
     public bool Italic { get; set; } = false;
 
-    [JsonProperty("Underline")]
+    [JsonPropertyName("Underline")]
     public bool Underline { get; set; } = false;
+
+    public PotatoParagraph()
+    {
+        this.Text = string.Empty;
+        this.Background = null;
+        this.Foreground = null;
+        this.Bold = false;
+        this.Italic = false;
+        this.Underline = false;
+    }
 
     public PotatoParagraph(string Text, Brush Background, Brush Foreground, bool Bold, bool Italic, bool Underline)
     {

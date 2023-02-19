@@ -1,146 +1,144 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <StartupObject>PotatoWall.PotatoWallClient</StartupObject>
-    <AssemblyName>PotatoWall</AssemblyName>
-    <RootNamespace>PotatoWall</RootNamespace>
-    <ApplicationIcon>potatowall.ico</ApplicationIcon>
-    <Description>By using WinDivert this application gives you the ability to allow/block connections.</Description>
-    <AssemblyVersion>1.5.1.0</AssemblyVersion>
-    <FileVersion>1.5.1.0</FileVersion>
-    <Copyright>Copyright © 2016-2022 POQDavid</Copyright>
-    <PackageId>PotatoWall</PackageId>
-    <Product>PotatoWall</Product>
-    <Company>POQDavid</Company>
-    <Authors>POQDavid</Authors>
-    <PackageIcon>potatowall.png</PackageIcon>
-    <Version>1.5.1.0</Version>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
-    <PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Platforms>x64;x86</Platforms>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<StartupObject>PotatoWall.App</StartupObject>
+		<AssemblyName>PotatoWall</AssemblyName>
+		<RootNamespace>PotatoWall</RootNamespace>
+		<ApplicationIcon>potatowall.ico</ApplicationIcon>
+		<Description>By using WinDivert this application gives you the ability to allow/block connections.</Description>
+		<AssemblyVersion>1.6.0.0</AssemblyVersion>
+		<FileVersion>1.6.0.0</FileVersion>
+		<Copyright>Copyright © 2023 POQDavid</Copyright>
+		<PackageId>PotatoWall</PackageId>
+		<Product>PotatoWall</Product>
+		<Company>POQDavid</Company>
+		<Authors>POQDavid</Authors>
+		<PackageIcon>potatowall.png</PackageIcon>
+		<Version>1.6.0.0</Version>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
+		<PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<Platforms>x64;x86</Platforms>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>bin\Release\x64\</OutputPath>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<OutputPath>bin\Release\x64\</OutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <OutputPath>bin\Release\x86\</OutputPath>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+		<OutputPath>bin\Release\x86\</OutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>bin\Debug\x64\</OutputPath>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<OutputPath>bin\Debug\x64\</OutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <OutputPath>bin\Debug\x86\</OutputPath>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+		<OutputPath>bin\Debug\x86\</OutputPath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Libs\WinDivert\x64\netdump.exe" />
-    <None Remove="Libs\WinDivert\x64\netfilter.exe" />
-    <None Remove="Libs\WinDivert\x64\passthru.exe" />
-    <None Remove="Libs\WinDivert\x64\streamdump.exe" />
-    <None Remove="Libs\WinDivert\x64\webfilter.exe" />
-    <None Remove="Libs\WinDivert\x64\WinDivert.lib" />
-    <None Remove="Libs\WinDivert\x86\netdump.exe" />
-    <None Remove="Libs\WinDivert\x86\netfilter.exe" />
-    <None Remove="Libs\WinDivert\x86\passthru.exe" />
-    <None Remove="Libs\WinDivert\x86\streamdump.exe" />
-    <None Remove="Libs\WinDivert\x86\webfilter.exe" />
-    <None Remove="Libs\WinDivert\x86\WinDivert.lib" />
-    <None Remove="potatowall.ico" />
-    <None Remove="potatowall.png" />
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="potatowall.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Libs\WinDivert\x64\netdump.exe" />
+		<None Remove="Libs\WinDivert\x64\netfilter.exe" />
+		<None Remove="Libs\WinDivert\x64\passthru.exe" />
+		<None Remove="Libs\WinDivert\x64\streamdump.exe" />
+		<None Remove="Libs\WinDivert\x64\webfilter.exe" />
+		<None Remove="Libs\WinDivert\x64\WinDivert.lib" />
+		<None Remove="Libs\WinDivert\x86\netdump.exe" />
+		<None Remove="Libs\WinDivert\x86\netfilter.exe" />
+		<None Remove="Libs\WinDivert\x86\passthru.exe" />
+		<None Remove="Libs\WinDivert\x86\streamdump.exe" />
+		<None Remove="Libs\WinDivert\x86\webfilter.exe" />
+		<None Remove="Libs\WinDivert\x86\WinDivert.lib" />
+		<None Remove="potatowall.ico" />
+		<None Remove="potatowall.png" />
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="potatowall.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MaterialDesignColors" Version="2.0.4" />
-    <PackageReference Include="MaterialDesignExtensions" Version="3.3.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
-    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.0" />
-    <PackageReference Include="MaterialDesignThemes.Wpf" Version="1.0.1" />
-    <PackageReference Include="MaxMind.Db" Version="3.0.0" />
-    <PackageReference Include="MaxMind.GeoIP2" Version="4.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
-    <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="6.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MaterialDesignColors" Version="2.1.1" />
+		<PackageReference Include="MaterialDesignThemes" Version="4.7.1" />
+		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
+		<PackageReference Include="MaterialDesignThemes.Wpf" Version="1.0.1" />
+		<PackageReference Include="MaxMind.Db" Version="4.0.0" />
+		<PackageReference Include="MaxMind.GeoIP2" Version="5.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+		<PackageReference Include="Serilog" Version="2.12.0" />
+		<PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+		<PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="potatowall.png" />
-    <Resource Include="potatowall.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="potatowall.png" />
+		<Resource Include="potatowall.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Libs\WinDivert\$(Platform)\WinDivert.dll" Link="$(Platform)/%(Filename)%(Extension)">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Libs\WinDivert\$(Platform)\WinDivert64.sys" Link="$(Platform)/%(Filename)%(Extension)">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Libs\WinDivert\$(Platform)\WinDivert32.sys" Link="$(Platform)/%(Filename)%(Extension)">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Libs\WinDivert\$(Platform)\WinDivert.dll" Link="$(Platform)/%(Filename)%(Extension)">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Libs\WinDivert\$(Platform)\WinDivert64.sys" Link="$(Platform)/%(Filename)%(Extension)">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Libs\WinDivert\$(Platform)\WinDivert32.sys" Link="$(Platform)/%(Filename)%(Extension)">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="flags\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="flags\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Libs\WinDivertSharp\**" />
-    <Compile Remove="Release\**" />
-    <EmbeddedResource Remove="Libs\WinDivertSharp\**" />
-    <EmbeddedResource Remove="Release\**" />
-    <None Remove="Libs\WinDivertSharp\**" />
-    <None Remove="Release\**" />
-    <Page Remove="Libs\WinDivertSharp\**" />
-    <Page Remove="Release\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Libs\WinDivertSharp\**" />
+		<Compile Remove="Release\**" />
+		<EmbeddedResource Remove="Libs\WinDivertSharp\**" />
+		<EmbeddedResource Remove="Release\**" />
+		<None Remove="Libs\WinDivertSharp\**" />
+		<None Remove="Release\**" />
+		<Page Remove="Libs\WinDivertSharp\**" />
+		<Page Remove="Release\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Utils\Logger.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Utils\Logger.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="Libs\WinDivertSharp\WinDivertSharp\WinDivertSharp.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="Libs\WinDivertSharp\WinDivertSharp\WinDivertSharp.csproj" />
+	</ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="$(ProjectDir)\stopWinDivert.bat" />
-  </Target>
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="$(ProjectDir)\stopWinDivert.bat" />
+	</Target>
 </Project>
