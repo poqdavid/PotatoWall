@@ -1,0 +1,73 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: BuildSetup
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .\PotatoWall.sln
+  
+  # Path to the project file
+  PROJECT_FILE_PATH: PotatoWallSetup.wixproj
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.401
+
+    - name: Pull submodules recursively
+      run: git submodule update --init --recursive
+
+    - name: Update submodules recursively
+      run: git submodule update --recursive --remote
+      
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Installing dotnet packages
+      run: |
+       dotnet tool install --global wix
+       dotnet tool install -g BinlogTool
+
+    - name: Installing dotnet logger
+      run: choco install msbuild-structured-log-viewer
+
+    - name: BuildFD
+      working-directory: Setup\
+      run: |
+        dotnet build /bl "${{env.PROJECT_FILE_PATH}}" -c ReleaseFD -a x64
+        binlogtool search msbuild.binlog $error
+        binlogtool search msbuild.binlog $warning
+
+    - name: Upload Binlog
+      uses: actions/upload-artifact@v2
+      with:
+        name: binlog
+        path: Setup\msbuild.binlog
+
+
+    - name: BuildSC
+      working-directory: Setup\
+      run: dotnet build /bl "${{env.PROJECT_FILE_PATH}}" -c ReleaseSC -a x64

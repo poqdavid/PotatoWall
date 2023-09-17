@@ -36,11 +36,11 @@ public partial class PotatoWallUI : Window
 
     private static Brush DefaultFrogroundC = Brushes.White;
 
-    public IPList<SrcIPData> IpWhiteList { get; set; }
+    public IPListCompact<BaseIPData> IpWhiteList { get; set; }
 
-    public IPList<SrcIPData> IpBlackList { get; set; }
+    public IPListCompact<BaseIPData> IpBlackList { get; set; }
 
-    public IPList<SrcIPData> IpAutoWhiteList { get; set; }
+    public IPListCompact<BaseIPData> IpAutoWhiteList { get; set; }
 
     public IPList<SrcIPData> ActiveIPList { get; set; }
 
@@ -89,6 +89,7 @@ public partial class PotatoWallUI : Window
     private readonly SettingsViewModel settingsViewModel;
 
     private static HttpClient httpClient = new();
+    private static PaletteHelper paletteHelper = new();
 
     public PotatoWallUI()
     {
@@ -109,11 +110,21 @@ public partial class PotatoWallUI : Window
         settingsViewModel.IColorData.Load();
 
         ActiveIPList = new IPList<SrcIPData>(Application.Current.Dispatcher);
-        IpWhiteList = new IPList<SrcIPData>(Application.Current.Dispatcher);
-        IpBlackList = new IPList<SrcIPData>(Application.Current.Dispatcher);
-        IpAutoWhiteList = new IPList<SrcIPData>(Application.Current.Dispatcher);
+        IpWhiteList = new IPListCompact<BaseIPData>(Application.Current.Dispatcher);
+        IpBlackList = new IPListCompact<BaseIPData>(Application.Current.Dispatcher);
+        IpAutoWhiteList = new IPListCompact<BaseIPData>(Application.Current.Dispatcher);
+
+        IpWhiteList = Json.Read<IPListCompact<BaseIPData>>(PotatoWallClient.WhiteListPath, "[]");
+        PotatoWallClient.Logger.Information("WhiteList Loaded");
+
+        IpBlackList = Json.Read<IPListCompact<BaseIPData>>(PotatoWallClient.BlackListPath, "[]");
+        PotatoWallClient.Logger.Information("BlackList Loaded");
 
         InitializeComponent();
+
+        SetGUIMode(ISettings.GUI.Mode);
+
+        SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
         LocalIP = GetLocalIP();
         if (!currentNICIPAddress.Contains(LocalIP)) { currentNICIPAddress.Add(LocalIP); }
@@ -121,6 +132,7 @@ public partial class PotatoWallUI : Window
         PotatoWallClient.Logger.Information("Initialized resources for PotatoWallUI");
         RegEX = new Regex(PotatoWallClient.ISettings.Firewall.RegEX);
         PotatoWallClient.ISettings.PropertyChanged += ISettings_PropertyChanged;
+        PotatoWallClient.ISettings.GUI.PropertyChanged += GUI_PropertyChanged;
         PotatoWallClient.ISettings.GUI.XTheme.PropertyChanged += ITheme_PropertyChanged;
         PotatoWallClient.ISettings.WinDivert.PropertyChanged += WinDivert_PropertyChanged;
         PotatoWallClient.ISettings.GeoIP.PropertyChanged += GeoIP_PropertyChanged;
@@ -131,10 +143,43 @@ public partial class PotatoWallUI : Window
         addIPViewModel.AddIPBlackListEvent += Button_AddIPBlackList_Click;
         addIPViewModel.AddIPWhiteListEvent += Button_AddIPWhiteList_Click;
         addIPViewModel.AddIPAutoWhiteListEvent += Button_AddIPAutoWhiteList_Click;
+
+        IpWhiteList.CollectionChanged += IpWhiteList_CollectionChanged;
+        IpBlackList.CollectionChanged += IpBlackList_CollectionChanged;
+    }
+
+    private void IpWhiteList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        try
+        {
+            Json.Write(PotatoWallClient.WhiteListPath, IpWhiteList);
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Saving Whitelist");
+        }
+    }
+
+    private void IpBlackList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        try
+        {
+            Json.Write(PotatoWallClient.BlackListPath, IpBlackList);
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Saving Blacklist");
+        }
     }
 
     private void Firewall_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        Setting.Settings.SaveSetting();
+    }
+
+    private void GUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        SetGUIMode(ISettings.GUI.Mode);
         Setting.Settings.SaveSetting();
     }
 
@@ -157,6 +202,26 @@ public partial class PotatoWallUI : Window
     {
         Button_RegEX_Icon.Foreground = PotatoWallClient.ISettings.Firewall.EnableRegEX ? Brushes.LimeGreen : DefaultFrogroundC;
         Setting.Settings.SaveSetting();
+    }
+
+    private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category == UserPreferenceCategory.General && ISettings.GUI.Mode.ToLower() == "auto")
+        {
+            ITheme itheme = paletteHelper.GetTheme();
+            itheme.SetBaseTheme(GetSystemTheme());
+            paletteHelper.SetTheme(itheme);
+        }
+    }
+
+    private IBaseTheme GetSystemTheme()
+    {
+        string regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+        string valName = "AppsUseLightTheme";
+
+        using RegistryKey regKey = Registry.CurrentUser.OpenSubKey(regPath);
+
+        return regKey.GetValue<uint>(valName, 0).ToTheme();
     }
 
     private void Window_Client_Loaded(object sender, RoutedEventArgs e)
@@ -516,9 +581,30 @@ public partial class PotatoWallUI : Window
         }
     }
 
+    private void SetGUIMode(string mode)
+    {
+        ITheme itheme = paletteHelper.GetTheme();
+
+        switch (mode.ToLower())
+        {
+            case "dark":
+                itheme.SetBaseTheme(Theme.Dark);
+                break;
+
+            case "light":
+                itheme.SetBaseTheme(Theme.Light);
+                break;
+
+            case "auto":
+                itheme.SetBaseTheme(GetSystemTheme());
+                break;
+        }
+
+        paletteHelper.SetTheme(itheme);
+    }
+
     public static void SetTheme(string cname)
     {
-        PaletteHelper paletteHelper = new();
         SwatchesProvider swatchesProvider = new();
         Swatch color = swatchesProvider.Swatches.FirstOrDefault(a => a.Name == cname);
         paletteHelper.ReplacePrimaryColor(color);
@@ -920,8 +1006,8 @@ public partial class PotatoWallUI : Window
                         }
 
                         _ = addr.Direction == WinDivertDirection.Inbound
-                            ? IpAutoWhiteList.AddContains(new SrcIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}", DstIPAddress, $"{DstPort.SWPOrder()}"))
-                            : IpAutoWhiteList.AddContains(new SrcIPData(DstIPAddress, $"{DstPort.SWPOrder()}", SrcIPAddress, $"{SrcPort.SWPOrder()}"));
+                            ? IpAutoWhiteList.AddContains(new BaseIPData(SrcIPAddress, $"{SrcPort.SWPOrder()}"))
+                            : IpAutoWhiteList.AddContains(new BaseIPData(DstIPAddress, $"{DstPort.SWPOrder()}"));
                     }
 
                     if (!currentNICIPAddress.Contains(SrcIPAddress))
@@ -1026,32 +1112,74 @@ public partial class PotatoWallUI : Window
 
     private void MenuItem_BlacklistAdd_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpBlackList.AddContains(listBox_activeiplist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpBlackList.AddContains(listBox_activeiplist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Adding to Whitelist");
+        }
     }
 
     private void MenuItem_WhitelistAdd_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpWhiteList.AddContains(listBox_activeiplist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpWhiteList.AddContains(listBox_activeiplist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Adding to Whitelist");
+        }
     }
 
     private void MenuItem_AutoWhitelistAdd_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpAutoWhiteList.AddContains(listBox_activeiplist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpAutoWhiteList.AddContains(listBox_activeiplist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Adding to AutoWhitelist");
+        }
     }
 
     private void MenuItem_WhitelistRemove_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpWhiteList.Remove(listBox_whitelist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpWhiteList.Remove(listBox_whitelist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Removing from Whitelist");
+        }
     }
 
     private void MenuItem_BlacklistRemove_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpBlackList.Remove(listBox_blacklist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpBlackList.Remove(listBox_blacklist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Removing from Blacklist");
+        }
     }
 
     private void MenuItem_AutoWhitelistRemove_Click(object sender, RoutedEventArgs e)
     {
-        _ = IpAutoWhiteList.Remove(listBox_autowhitelist.SelectedItem.CastTo<SrcIPData>());
+        try
+        {
+            _ = IpAutoWhiteList.Remove(listBox_autowhitelist.SelectedItem.CastTo<BaseIPData>());
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error(ex, "Error: Removing from AutoWhitelist");
+        }
     }
 
     private void MenuItem_CopySrcIP_Click(object sender, RoutedEventArgs e)
@@ -1143,7 +1271,7 @@ public partial class PotatoWallUI : Window
                 else
                 {
                     PotatoWallClient.Logger.Information("File Hash Didn't Matched!!!");
-                    long urlSize = await GetFileSizeAsync(url);
+                    double urlSize = await GetFileSizeAsync(url);
                     File.Delete(fi.FullName);
                     await WClient(url, fileName, urlSize);
                     GZDecompress(fi, newFileName);
@@ -1153,7 +1281,7 @@ public partial class PotatoWallUI : Window
             }
             else
             {
-                long urlSize = await GetFileSizeAsync(url);
+                double urlSize = await GetFileSizeAsync(url);
                 await WClient(url, fileName, urlSize);
                 GZDecompress(fi, newFileName);
                 PotatoWallClient.Logger.Information("");
@@ -1164,7 +1292,7 @@ public partial class PotatoWallUI : Window
         return true;
     }
 
-    private async Task<bool> WClient(Uri url, string fileName, long totalSize)
+    private async Task<bool> WClient(Uri url, string fileName, double totalSize)
     {
         PotatoWallClient.Logger.Information("Downloading {url}...", url);
         PotatoWallClient.Logger.Warning("File Size: {totalsize}MB", GetMB(totalSize));
@@ -1172,7 +1300,7 @@ public partial class PotatoWallUI : Window
         using (HttpResponseMessage HttpRM = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
         {
             using var stream = await HttpRM.Content.ReadAsStreamAsync();
-            long totalBytesRead = 0L;
+            double totalBytesRead = 0L;
             var buffer = new byte[4096];
             bool readData = true;
 
@@ -1184,7 +1312,7 @@ public partial class PotatoWallUI : Window
                     if (bytesRead == 0)
                     {
                         readData = false;
-                        DownloadProgress((Math.Round(totalBytesRead.CastTo<double>() / totalSize * 100, 2).CastTo<int>()));
+                        DownloadProgress(Math.Round(totalBytesRead / totalSize * 100, 2));
                         continue;
                     }
 
@@ -1192,7 +1320,7 @@ public partial class PotatoWallUI : Window
 
                     totalBytesRead += bytesRead;
 
-                    DownloadProgress((Math.Round(totalBytesRead.CastTo<double>() / totalSize * 100, 2).CastTo<int>()));
+                    DownloadProgress(Math.Round(totalBytesRead / totalSize * 100, 2));
                 }
                 while (readData);
             }
@@ -1273,7 +1401,7 @@ public partial class PotatoWallUI : Window
         if (newFileName.Contains(@"city.mmdb")) { PotatoWallClient.Logger.Information("Loading {newFileName} database.", newFileName); PotatoWallClient.CityMMDBReader = new(newFileName); }
     }
 
-    private void DownloadProgress(int ProgressPercentage)
+    private void DownloadProgress(double ProgressPercentage)
     {
         if (ProgressPercentage == 100) { Button_DownloadDataBase_Text.Dispatcher.InvokeOrExecute(() => { Button_DownloadDataBase_Text.Text = "Download Database"; }); }
         else { Button_DownloadDataBase_Text.Dispatcher.InvokeOrExecute(() => { Button_DownloadDataBase_Text.Text = $"Downloading Database %{ProgressPercentage}"; }); }
@@ -1330,20 +1458,20 @@ public partial class PotatoWallUI : Window
 
     private void Button_AddIPBlackList_Click(object sender, EventArgs e)
     {
-        if (addIPViewModel.IP != null) { _ = IpBlackList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
+        if (addIPViewModel.IP != null) { _ = IpBlackList.AddContains(new BaseIPData(addIPViewModel.IP, "0000")); }
     }
 
     private void Button_AddIPWhiteList_Click(object sender, EventArgs e)
     {
-        if (addIPViewModel.IP != null) { _ = IpWhiteList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
+        if (addIPViewModel.IP != null) { _ = IpWhiteList.AddContains(new BaseIPData(addIPViewModel.IP, "0000")); }
     }
 
     private void Button_AddIPAutoWhiteList_Click(object sender, EventArgs e)
     {
-        if (addIPViewModel.IP != null) { _ = IpAutoWhiteList.AddContains(new SrcIPData(addIPViewModel.IP, "0000")); }
+        if (addIPViewModel.IP != null) { _ = IpAutoWhiteList.AddContains(new BaseIPData(addIPViewModel.IP, "0000")); }
     }
 
-    public static string GetMB(long bytes) => (bytes / 1024f / 1024f).ToString("0.##");
+    public static string GetMB(double bytes) => (bytes / 1024f / 1024f).ToString("0.##");
 
     public static void StopWinDivert()
     {

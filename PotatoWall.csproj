@@ -10,15 +10,15 @@
 		<RootNamespace>PotatoWall</RootNamespace>
 		<ApplicationIcon>potatowall.ico</ApplicationIcon>
 		<Description>By using WinDivert this application gives you the ability to allow/block connections.</Description>
-		<AssemblyVersion>1.6.0.0</AssemblyVersion>
-		<FileVersion>1.6.0.0</FileVersion>
+		<AssemblyVersion>1.7.0.0</AssemblyVersion>
+		<FileVersion>1.7.0.0</FileVersion>
 		<Copyright>Copyright © 2023 POQDavid</Copyright>
 		<PackageId>PotatoWall</PackageId>
 		<Product>PotatoWall</Product>
 		<Company>POQDavid</Company>
 		<Authors>POQDavid</Authors>
 		<PackageIcon>potatowall.png</PackageIcon>
-		<Version>1.6.0.0</Version>
+		<Version>1.7.0.0</Version>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/poqdavid/PotatoWall.git</RepositoryUrl>
 		<PackageProjectUrl>http://poqdavid.github.io/PotatoWall</PackageProjectUrl>
@@ -26,6 +26,8 @@
 		<Platforms>x64;x86</Platforms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<LangVersion>latest</LangVersion>
+		<Configurations>Debug;Release;ReleaseFD;ReleaseSC</Configurations>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -33,8 +35,29 @@
 		<OutputPath>bin\Release\x64\</OutputPath>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSC|x64'">
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <OutputPath>bin\Release\x64\</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseFD|x64'">
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <OutputPath>bin\Release\x64\</OutputPath>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<OutputPath>bin\Release\x86\</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSC|x86'">
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <OutputPath>bin\Release\x86\</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseFD|x86'">
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <OutputPath>bin\Release\x86\</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -43,6 +66,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<OutputPath>bin\Debug\x86\</OutputPath>
 	</PropertyGroup>
 
@@ -72,9 +96,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MaterialDesignColors" Version="2.1.1" />
-		<PackageReference Include="MaterialDesignThemes" Version="4.7.1" />
-		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
+		<PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+		<PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+		<PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
 		<PackageReference Include="MaterialDesignThemes.Wpf" Version="1.0.1" />
 		<PackageReference Include="MaxMind.Db" Version="4.0.0" />
 		<PackageReference Include="MaxMind.GeoIP2" Version="5.1.0" />
@@ -82,15 +106,15 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-		<PackageReference Include="Serilog" Version="2.12.0" />
+		<PackageReference Include="Serilog" Version="3.0.1" />
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
 		<PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
-		<PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="7.0.1" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.0" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

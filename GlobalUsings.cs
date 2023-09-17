@@ -4,6 +4,7 @@ global using MaterialDesignThemes.Wpf;
 global using MaxMind.Db;
 global using MaxMind.GeoIP2.Responses;
 global using Microsoft.Extensions.Configuration;
+global using Microsoft.Win32;
 global using PotatoWall.Extensions;
 global using PotatoWall.MVVM.ViewModel;
 global using PotatoWall.Utils;

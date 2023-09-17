@@ -102,6 +102,10 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="5" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
                         Grid.Row="0"
@@ -137,6 +141,20 @@
                                     <Setter Property="IsHitTestVisible" Value="{Binding ColorEnabled}" />
                                 </Style>
                             </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                        <TextBlock
+                            Grid.Row="4"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"><Run Text="Mode: " /></TextBlock>
+                        <ComboBox
+                            x:Name="guimode"
+                            Grid.Row="6"
+                            Width="Auto"
+                            Height="Auto"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            ItemsSource="{Binding ISettings.GUI.Modes, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedValue="{Binding ISettings.GUI.Mode, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}">
                         </ComboBox>
                     </Grid>
                 </GroupBox>
@@ -336,7 +354,7 @@
                         VerticalContentAlignment="Center"
                         ToolTip="The maximum number of packets for a matchmaking request."
                         AutomationProperties.HelpText="The maximum number of packets for a matchmaking request."
-                        Text="{Binding ISettings.Firewall.MaxPacketsMMS, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}"/>
+                        Text="{Binding ISettings.Firewall.MaxPacketsMMS, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnSourceUpdated=True, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:PotatoWallUI}}, UpdateSourceTrigger=PropertyChanged}" />
                     </Grid>
                 </GroupBox>
             </Grid>
