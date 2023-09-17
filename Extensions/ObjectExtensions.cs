@@ -17,6 +17,8 @@
  *      along with PotatoWall.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using PotatoWall.MVVM.Model;
+
 namespace PotatoWall.Extensions;
 
 // <copyright file="ObjectExtensions.cs" company="POQDavid">
@@ -36,7 +38,9 @@ public static class ObjectExtensions
     /// <exception cref="ArgumentNullException"></exception>
     public static T CastTo<T>(this object value)
     {
-        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (typeof(T) == typeof(ColorDataList)) { return (T)value; }
+
+        if (value is null) throw new ArgumentNullException(typeof(T).FullName);
 
         if (value is T t) return t;
 

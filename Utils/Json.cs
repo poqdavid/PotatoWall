@@ -103,4 +103,38 @@ public class Json
 
         return JsonSerializer.Serialize(jsonobj, options);
     }
+
+    public static T Read<T>(string filepath, string defaultdata = "{}")
+    {
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true
+        };
+
+        try
+        {
+            string json_string = File.ReadAllText(filepath);
+            if (Json.IsValid(json_string))
+            {
+                return JsonSerializer.Deserialize<T>(json_string, options);
+            }
+            else
+            {
+                PotatoWallClient.Logger.Error("Error loading JSON, data is not valid!!");
+                return JsonSerializer.Deserialize<T>(defaultdata, options);
+            }
+        }
+        catch (Exception ex)
+        {
+            PotatoWallClient.Logger.Error("Error loading JSON", ex);
+            return JsonSerializer.Deserialize<T>(defaultdata, options);
+        }
+    }
+
+    public static void Write(string filepath, object value)
+    {
+        JsonSerializerOptions options = new() { WriteIndented = true };
+
+        File.WriteAllText(filepath, JsonSerializer.Serialize(value, options));
+    }
 }

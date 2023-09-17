@@ -25,61 +25,37 @@ namespace PotatoWall.MVVM.Model;
 // <author>POQDavid</author>
 // <summary>This is the IPList class.</summary>
 
-public class SrcIPData : INotifyPropertyChanged
+public class BaseIPData : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
-    private string defaultIP = "";
+    internal string defaultIP = "";
 
-    private string defaultPort = "";
+    internal string defaultPort = "";
 
     private string defaultDirection = "N/A";
 
     private Dictionary<string, HashSet<string>> defaultIPPorts = new();
 
-    private DstIPData defaultDstIPData = new();
-
-    public SrcIPData()
+    public BaseIPData()
     {
         IP = defaultIP;
         Port = defaultPort;
     }
 
-    public SrcIPData(string ip, string port)
+    public BaseIPData(string ip, string port)
     {
         IP = ip;
 
         Port = port;
     }
 
-    public SrcIPData(string srcip, string srcport, string dstip, string dstport)
-    {
-        IP = srcip;
-
-        Port = srcport;
-
-        DstIPData.IP = dstip;
-        DstIPData.Port = dstport;
-    }
-
-    public SrcIPData(string ip, string port, string direction)
+    public BaseIPData(string ip, string port, string direction)
     {
         IP = ip;
 
         Port = port;
         Direction = direction;
-    }
-
-    public SrcIPData(string srcip, string srcport, string dstip, string dstport, string direction)
-    {
-        IP = srcip;
-
-        Port = srcport;
-
-        Direction = direction;
-
-        DstIPData.IP = dstip;
-        DstIPData.Port = dstport;
     }
 
     [JsonPropertyName("IP")]
@@ -90,7 +66,6 @@ public class SrcIPData : INotifyPropertyChanged
         {
             bool valchanged = false; if (defaultPort != value) { valchanged = true; }
             defaultIP = value;
-            LastActivity = DateTime.Now;
             if (valchanged) { OnPropertyChanged(); OnPropertyChanged(nameof(IPPort)); OnPropertyChanged(nameof(ImageSource)); OnPropertyChanged(nameof(ASN)); }
         }
     }
@@ -135,6 +110,7 @@ public class SrcIPData : INotifyPropertyChanged
         }
     }
 
+    [JsonIgnore]
     [JsonPropertyName("IPPort")]
     public string IPPort => $"{IP}:{Port}";
 
@@ -142,10 +118,7 @@ public class SrcIPData : INotifyPropertyChanged
     public Dictionary<string, HashSet<string>> IPPorts
     { get => defaultIPPorts; set { defaultIPPorts = value; OnPropertyChanged(); } }
 
-    [JsonPropertyName("DstIPData")]
-    public DstIPData DstIPData
-    { get => defaultDstIPData; set { defaultDstIPData = value; OnPropertyChanged(); } }
-
+    [JsonIgnore]
     [JsonPropertyName("ImageSource")]
     public Uri ImageSource
     {
@@ -161,6 +134,148 @@ public class SrcIPData : INotifyPropertyChanged
 
     [JsonPropertyName("ASN")]
     public string ASN => GetASN();
+
+    public override bool Equals(object obj)
+    {
+        return obj.GetType() == typeof(string) ? IP == obj.CastTo<string>() : obj is BaseIPData iPData && IP.Equals(iPData.IP, global::System.StringComparison.Ordinal);
+    }
+
+    public IPAddress ToIPAddress()
+    {
+        return IPAddress.Parse(IP);
+    }
+
+    public InjectableValues ToInjectables()
+    {
+        InjectableValues injectables = new();
+        injectables.AddValue("ip_address", IP);
+        return injectables;
+    }
+
+    public override int GetHashCode()
+    {
+        return IP.GetHashCode();
+    }
+
+    public string GetCountry()
+    {
+        string temp = "XX";
+
+        try
+        {
+            if (PotatoWallClient.CityMMDBReader != null)
+            {
+                CityResponse data = PotatoWallClient.CityMMDBReader.Find<CityResponse>(ToIPAddress(), ToInjectables());
+
+                if (data != null)
+                {
+                    temp = data.Country.IsoCode;
+                }
+            }
+
+            return temp;
+        }
+        catch (Exception)
+        {
+            return temp;
+        }
+    }
+
+    public string GetASN()
+    {
+        string temp = "ASN: ERROR";
+        string asn = "N/A";
+        string asnorg = "N/A";
+
+        try
+        {
+            if (PotatoWallClient.ASNMMDBReader != null)
+            {
+                AsnResponse data = PotatoWallClient.ASNMMDBReader.Find<AsnResponse>(ToIPAddress(), ToInjectables());
+
+                if (data != null)
+                {
+                    if (data.AutonomousSystemNumber is not null and not 0)
+                    {
+                        asn = $"{data.AutonomousSystemNumber}";
+                    }
+
+                    if (data.AutonomousSystemOrganization != null && data.AutonomousSystemOrganization != string.Empty)
+                    {
+                        asnorg = data.AutonomousSystemOrganization;
+                    }
+                }
+
+                temp = $"ASN: {asn}, ASNOrg: {asnorg}";
+            }
+
+            return temp;
+        }
+        catch (Exception)
+        {
+            return temp;
+        }
+    }
+
+    // This method is called by the Set accessor of each property.
+    // The CallerMemberName attribute that is applied to the optional propertyName
+    // parameter causes the property name of the caller to be substituted as an argument.
+    internal void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public class SrcIPData : BaseIPData, INotifyPropertyChanged
+{
+    private DstIPData defaultDstIPData = new();
+
+    public SrcIPData()
+    {
+        IP = base.defaultIP;
+        Port = base.defaultPort;
+    }
+
+    public SrcIPData(string ip, string port)
+    {
+        IP = ip;
+
+        Port = port;
+    }
+
+    public SrcIPData(string srcip, string srcport, string dstip, string dstport)
+    {
+        IP = srcip;
+
+        Port = srcport;
+
+        DstIPData.IP = dstip;
+        DstIPData.Port = dstport;
+    }
+
+    public SrcIPData(string ip, string port, string direction)
+    {
+        IP = ip;
+
+        Port = port;
+        Direction = direction;
+    }
+
+    public SrcIPData(string srcip, string srcport, string dstip, string dstport, string direction)
+    {
+        IP = srcip;
+
+        Port = srcport;
+
+        Direction = direction;
+
+        DstIPData.IP = dstip;
+        DstIPData.Port = dstport;
+    }
+
+    [JsonPropertyName("DstIPData")]
+    public DstIPData DstIPData
+    { get => defaultDstIPData; set { defaultDstIPData = value; OnPropertyChanged(); } }
 
     [JsonPropertyName("LastActivity")]
     public DateTime LastActivity { get; private set; } = DateTime.Now;
@@ -170,106 +285,18 @@ public class SrcIPData : INotifyPropertyChanged
         return obj.GetType() == typeof(string) ? IP == obj.CastTo<string>() : obj is SrcIPData iPData && IP.Equals(iPData.IP, global::System.StringComparison.Ordinal);
     }
 
-    public IPAddress ToIPAddress()
-    {
-        return IPAddress.Parse(IP);
-    }
-
-    public InjectableValues ToInjectables()
-    {
-        InjectableValues injectables = new();
-        injectables.AddValue("ip_address", IP);
-        return injectables;
-    }
-
     public override int GetHashCode()
     {
         return IP.GetHashCode();
     }
-
-    public string GetCountry()
-    {
-        string temp = "XX";
-
-        try
-        {
-            if (PotatoWallClient.CityMMDBReader != null)
-            {
-                CityResponse data = PotatoWallClient.CityMMDBReader.Find<CityResponse>(ToIPAddress(), ToInjectables());
-
-                if (data != null)
-                {
-                    temp = data.Country.IsoCode;
-                }
-            }
-
-            return temp;
-        }
-        catch (Exception)
-        {
-            return temp;
-        }
-    }
-
-    public string GetASN()
-    {
-        string temp = "ASN: ERROR";
-        string asn = "N/A";
-        string asnorg = "N/A";
-
-        try
-        {
-            if (PotatoWallClient.ASNMMDBReader != null)
-            {
-                AsnResponse data = PotatoWallClient.ASNMMDBReader.Find<AsnResponse>(ToIPAddress(), ToInjectables());
-
-                if (data != null)
-                {
-                    if (data.AutonomousSystemNumber is not null and not 0)
-                    {
-                        asn = $"{data.AutonomousSystemNumber}";
-                    }
-
-                    if (data.AutonomousSystemOrganization != null && data.AutonomousSystemOrganization != string.Empty)
-                    {
-                        asnorg = data.AutonomousSystemOrganization;
-                    }
-                }
-
-                temp = $"ASN: {asn}, ASNOrg: {asnorg}";
-            }
-
-            return temp;
-        }
-        catch (Exception)
-        {
-            return temp;
-        }
-    }
-
-    // This method is called by the Set accessor of each property.
-    // The CallerMemberName attribute that is applied to the optional propertyName
-    // parameter causes the property name of the caller to be substituted as an argument.
-    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }
 
-public class DstIPData : INotifyPropertyChanged
+public class DstIPData : BaseIPData, INotifyPropertyChanged
 {
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    private string defaultIP = "";
-
-    private string defaultPort = "";
-
-    private Dictionary<string, HashSet<string>> defaultIPPorts = new();
-
     public DstIPData()
     {
-        IP = defaultIP;
-        Port = defaultPort;
+        IP = base.defaultIP;
+        Port = base.defaultPort;
     }
 
     public DstIPData(string ip, string port)
@@ -278,67 +305,6 @@ public class DstIPData : INotifyPropertyChanged
         Port = port;
     }
 
-    [JsonPropertyName("IP")]
-    public string IP
-    {
-        get => defaultIP;
-        set
-        {
-            bool valchanged = false; if (defaultPort != value) { valchanged = true; }
-            defaultIP = value;
-            if (valchanged) { OnPropertyChanged(); OnPropertyChanged(nameof(IPPort)); OnPropertyChanged(nameof(ImageSource)); OnPropertyChanged(nameof(ASN)); }
-        }
-    }
-
-    [JsonPropertyName("Port")]
-    public string Port
-    {
-        get => defaultPort;
-        set
-        {
-            bool valchanged = false;
-            if (IPPorts.ContainsKey(IP))
-            {
-                _ = IPPorts[IP].Add(value);
-            }
-            else
-            {
-                IPPorts.Add(IP, new HashSet<string> { value });
-            }
-
-            if (defaultPort != value)
-            {
-                valchanged = true;
-            }
-
-            defaultPort = value;
-            if (valchanged) { OnPropertyChanged(); OnPropertyChanged(nameof(IPPort)); }
-        }
-    }
-
-    [JsonPropertyName("IPPort")]
-    public string IPPort => $"{IP}:{Port}";
-
-    [JsonPropertyName("IPPorts")]
-    public Dictionary<string, HashSet<string>> IPPorts
-    { get => defaultIPPorts; set { defaultIPPorts = value; OnPropertyChanged(); } }
-
-    [JsonPropertyName("ImageSource")]
-    public Uri ImageSource
-    {
-        get
-        {
-            string path = Path.Combine(Environment.CurrentDirectory, $"flags/{Country}.png");
-            return File.Exists(path) ? new Uri(path) : new Uri(Path.Combine(Environment.CurrentDirectory, $"flags/XX.png"));
-        }
-    }
-
-    [JsonPropertyName("Country")]
-    public string Country => GetCountry();
-
-    [JsonPropertyName("ASN")]
-    public string ASN => GetASN();
-
     public override bool Equals(object obj)
     {
         return obj.GetType() == typeof(string)
@@ -346,89 +312,97 @@ public class DstIPData : INotifyPropertyChanged
             : obj is SrcIPData iPData && IP.Equals(iPData.IP, StringComparison.Ordinal);
     }
 
-    public IPAddress ToIPAddress()
-    {
-        return IPAddress.Parse(IP);
-    }
-
-    public InjectableValues ToInjectables()
-    {
-        InjectableValues injectables = new();
-        injectables.AddValue("ip_address", IP);
-        return injectables;
-    }
-
     public override int GetHashCode()
     {
         return IP.GetHashCode();
     }
+}
 
-    public string GetCountry()
+public class IPListCompact<T> : ThreadSafeObservableCollection<BaseIPData>
+{
+    public IPListCompact(Dispatcher dispatcher) : base(dispatcher)
     {
-        string temp = "XX";
+        Dispatcher = dispatcher;
+    }
 
-        try
+    public IPListCompact() : base()
+    {
+        Dispatcher = Dispatcher.CurrentDispatcher;
+    }
+
+    public void AddOrUpdate(BaseIPData iPData)
+    {
+        if (AddContains(iPData))
         {
-            if (PotatoWallClient.CityMMDBReader != null)
+            try
             {
-                CityResponse data = PotatoWallClient.CityMMDBReader.Find<CityResponse>(ToIPAddress(), ToInjectables());
-
-                if (data != null)
+                ModifyIPList = false;
+                BaseIPData item = this.FirstOrDefault(i => i.IP == iPData.IP);
+                if (item != null)
                 {
-                    temp = data.Country.IsoCode;
+                    item = iPData;
                 }
             }
-
-            return temp;
-        }
-        catch (Exception)
-        {
-            return temp;
+            catch (Exception ex)
+            {
+                PotatoWallClient.Logger.Debug(ex, "AddOrUpdate: ");
+            }
+            finally
+            {
+                ModifyIPList = true;
+            }
         }
     }
 
-    public string GetASN()
+    public bool Contains(string ip)
     {
-        string temp = "ASN: ERROR";
-        string asn = "N/A";
-        string asnorg = "N/A";
-
-        try
+        for (int i = 0; i < Count; i++)
         {
-            if (PotatoWallClient.ASNMMDBReader != null)
+            if (Items[i].Equals(ip))
             {
-                AsnResponse data = PotatoWallClient.ASNMMDBReader.Find<AsnResponse>(ToIPAddress(), ToInjectables());
-
-                if (data != null)
-                {
-                    if (data.AutonomousSystemNumber is not null and not 0)
-                    {
-                        asn = $"{data.AutonomousSystemNumber}";
-                    }
-
-                    if (data.AutonomousSystemOrganization != null && data.AutonomousSystemOrganization != string.Empty)
-                    {
-                        asnorg = data.AutonomousSystemOrganization;
-                    }
-                }
-
-                temp = $"ASN: {asn}, ASNOrg: {asnorg}";
+                return true;
             }
-
-            return temp;
         }
-        catch (Exception)
-        {
-            return temp;
-        }
+        return false;
     }
 
-    // This method is called by the Set accessor of each property.
-    // The CallerMemberName attribute that is applied to the optional propertyName
-    // parameter causes the property name of the caller to be substituted as an argument.
-    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    public bool AddContains(string ip)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (!Contains(ip))
+        {
+            Add(new BaseIPData(ip, "0000"));
+            return false;
+        }
+
+        return true;
+    }
+}
+
+public class IPListCompact<TKey, TValue> : ThreadSafeObservableDictionary<String, BaseIPData>
+{
+    public IPListCompact() : base()
+    {
+        _dispatcher = Dispatcher.CurrentDispatcher;
+    }
+
+    public IPListCompact(Dispatcher dispatcher) : base(dispatcher)
+    {
+        _dispatcher = dispatcher;
+    }
+
+    public bool Remove(BaseIPData iPData)
+    {
+        return base.Remove(iPData.IP);
+    }
+
+    public bool AddContains(BaseIPData iPData)
+    {
+        return AddContains(iPData.IP, iPData);
+    }
+
+    public void AddOrUpdate(BaseIPData iPData)
+    {
+        AddOrUpdate(iPData.IP, iPData);
     }
 }
 
@@ -478,6 +452,17 @@ public class IPList<T> : ThreadSafeObservableCollection<SrcIPData>
             }
         }
         return false;
+    }
+
+    public bool AddContains(string ip)
+    {
+        if (!Contains(ip))
+        {
+            Add(new SrcIPData(ip, "0000"));
+            return false;
+        }
+
+        return true;
     }
 }
 

@@ -29,6 +29,7 @@ public partial class PotatoWallClient
     public static string AppDataPath { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PotatoWall");
     public static string DataPath { get; set; } = Path.Combine(AppDataPath, @"data");
     public static string LogsPath { get; set; } = Path.Combine(AppDataPath, @"logs");
+    public static string ListsPath { get; set; } = Path.Combine(AppDataPath, @"lists");
     public static string ColorDataPath { get; set; } = Path.Combine(AppDataPath, "Colors.data");
 
     ///<summary>
@@ -73,6 +74,9 @@ public partial class PotatoWallClient
 
     public static Logger Logger { get => logger; set => logger = value; }
     public static TextWriter PotatoWriter { get => potatoWriter; set => potatoWriter = value; }
+
+    public static string WhiteListPath { get; set; } = Path.Combine(ListsPath, "WhiteList.json");
+    public static string BlackListPath { get; set; } = Path.Combine(ListsPath, "BlackList.json");
 
     public static void InitializeComponent()
     {
@@ -129,6 +133,15 @@ public partial class PotatoWallClient
         else
         {
             Directory.CreateDirectory(LogsPath); logger.Information("Creating Logs folder {LogsPath}", LogsPath);
+        }
+
+        if (Directory.Exists(ListsPath))
+        {
+            logger.Information("Lists Path: {ListsPath}", ListsPath);
+        }
+        else
+        {
+            Directory.CreateDirectory(ListsPath); logger.Information("Creating Lists folder {ListsPath}", ListsPath);
         }
 
         LoadGeoIPDBs();

@@ -17,6 +17,8 @@
  *      along with SAPPRemote.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Runtime.Serialization;
+
 namespace PotatoWall.Setting;
 
 // <copyright file="Settings.cs" company="POQDavid">
@@ -50,7 +52,14 @@ public class Settings : INotifyPropertyChanged
             _ = Directory.CreateDirectory(PotatoWallClient.AppDataPath);
         }
 
-        JsonSerializerOptions options = new() { WriteIndented = true };
+        JsonSerializerOptions options = new()
+        {
+            WriteIndented = true,
+            Converters =
+            {
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+            }
+        };
 
         File.WriteAllText(PotatoWallClient.SettingPath, JsonSerializer.Serialize(PotatoWallUI.ISettings, options));
     }
@@ -67,7 +76,11 @@ public class Settings : INotifyPropertyChanged
             {
                 JsonSerializerOptions options = new()
                 {
-                    WriteIndented = true
+                    WriteIndented = true,
+                    Converters =
+                    {
+                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+                    }
                 };
 
                 PotatoWallUI.ISettings = JsonSerializer.Deserialize<Settings>(json_string, options);
@@ -126,6 +139,14 @@ public class XTheme : INotifyPropertyChanged
 
 public class GUI
 {
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    [JsonIgnore]
+    public List<string> Modes { get; set; } = new() { "Dark", "Light", "Auto" };
+
+    private string defaultMode = "Dark";
+    private XTheme defaultTheme = new(5);
+
     public GUI()
     {
         XTheme = new XTheme(5);
@@ -136,8 +157,34 @@ public class GUI
         XTheme = theme;
     }
 
+
     [JsonPropertyName("Theme")]
-    public XTheme XTheme { get; set; } = new(5);
+    public XTheme XTheme
+    {
+        get => defaultTheme;
+        set
+        {
+            defaultTheme = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonPropertyName("Mode")]
+    [DefaultValue("Dark")]
+    public string Mode
+    {
+        get => defaultMode;
+        set
+        {
+            defaultMode = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
 
 public class GeoIP
